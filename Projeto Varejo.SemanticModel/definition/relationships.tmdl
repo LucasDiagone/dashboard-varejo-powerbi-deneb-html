@@ -1,0 +1,50 @@
+relationship befc5887-1f3e-2dcd-a211-19dccca5bae3
+	fromColumn: F_Metas.ID_Loja
+	toColumn: D_Loja.ID_Loja
+
+relationship c6f8a93a-f3a0-5bcf-02fe-a548d50dd376
+	fromColumn: F_Vendas.ID_Cliente
+	toColumn: D_Clientes.ID_Cliente
+
+relationship 0b48359e-9166-ce6a-ba24-231a7fc3d3ff
+	fromColumn: F_Vendas.ID_Vendedor
+	toColumn: D_Vendedor.ID_Vendedor
+
+relationship 0888a24a-71eb-fd3d-f77e-39b3448fa9d8
+	fromColumn: F_Vendas.ID_Canal_Venda
+	toColumn: D_Canal_Venda.ID_Canal_Venda
+
+relationship f2ec32cd-8b0c-9fc2-109a-161bb3074c04
+	fromColumn: F_Vendas.ID_Produto
+	toColumn: D_Produto.ID_Produto
+
+relationship 30b4c8f4-a9c7-c8c9-0cf3-e047c0ef9167
+	fromColumn: F_Vendas.ID_Status_Pedido
+	toColumn: D_Status_Pedido.ID_Status_Pedido
+
+relationship 2bfb075c-4480-fdaf-8ced-f6c2ced05259
+	fromColumn: F_Vendas.ID_Forma_Pagamento
+	toColumn: D_Forma_Pagamento.ID_Forma_Pagamento
+
+relationship 6d1d4e93-5935-e039-74bd-395f3da26363
+	fromColumn: F_Vendas.ID_Loja
+	toColumn: D_Loja.ID_Loja
+
+relationship f14a2c96-a16b-5a1a-334f-73b65eb2870a
+	fromColumn: F_Vendas.Data_Pedido
+	toColumn: D_Calendario.Data
+
+relationship 3a4529d2-ffbf-0c45-ff5d-1b32b358f9af
+	isActive: false
+	fromColumn: F_Vendas.Data_Envio
+	toColumn: D_Calendario.Data
+
+relationship 23254495-0c60-aecc-eeac-793e2f5a7e6a
+	isActive: false
+	fromColumn: F_Vendas.Data_Entrega
+	toColumn: D_Calendario.Data
+
+relationship 3a4bd7f2-606a-7af3-606b-4aa4866c9188
+	fromColumn: F_Metas.Mes_Referencia
+	toColumn: D_Calendario.Data
+

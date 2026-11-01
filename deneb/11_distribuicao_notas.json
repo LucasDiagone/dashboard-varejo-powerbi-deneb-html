@@ -1,0 +1,245 @@
+{
+  "campos_no_power_bi": [
+    "Nota_Avaliacao",
+    "Pedidos"
+  ],
+  "spec": {
+    "data": {
+      "name": "dataset"
+    },
+    "width": "container",
+    "height": "container",
+    "title": {
+      "text": "Distribuição das avaliações",
+      "subtitle": "Pedidos avaliados por nota de 1 a 5"
+    },
+    "transform": [
+      {
+        "filter": "isValid(datum['Nota_Avaliacao']) && datum['Pedidos'] > 0"
+      },
+      {
+        "joinaggregate": [
+          {
+            "op": "sum",
+            "field": "Pedidos",
+            "as": "tot"
+          }
+        ]
+      },
+      {
+        "calculate": "datum['Pedidos'] / datum.tot",
+        "as": "share"
+      },
+      {
+        "calculate": "toNumber(datum['Nota_Avaliacao'])",
+        "as": "nota"
+      },
+      {
+        "calculate": "datum.nota + ' ★'",
+        "as": "lbl"
+      },
+      {
+        "calculate": "replace(format(datum.share, '.1%'), '.', ',')",
+        "as": "s_txt"
+      },
+      {
+        "calculate": "replace(format(datum['Pedidos'], ',.0f'), ',', '.') + ' pedidos'",
+        "as": "p_txt"
+      },
+      {
+        "joinaggregate": [
+          {
+            "op": "max",
+            "field": "share",
+            "as": "smax"
+          }
+        ]
+      },
+      {
+        "calculate": "datum.smax * 1.3",
+        "as": "xend"
+      }
+    ],
+    "encoding": {
+      "y": {
+        "field": "lbl",
+        "type": "ordinal",
+        "sort": {
+          "field": "nota",
+          "op": "max",
+          "order": "descending"
+        },
+        "axis": {
+          "title": null,
+          "labelColor": "#FFD60A",
+          "labelFontSize": 12.5,
+          "labelFontWeight": 600
+        }
+      },
+      "opacity": {
+        "condition": {
+          "param": "hn",
+          "empty": true,
+          "value": 1
+        },
+        "value": 0.45
+      }
+    },
+    "layer": [
+      {
+        "params": [
+          {
+            "name": "hn",
+            "select": {
+              "type": "point",
+              "fields": [
+                "lbl"
+              ],
+              "on": "pointerover",
+              "clear": "pointerout"
+            }
+          }
+        ],
+        "mark": {
+          "type": "bar",
+          "cornerRadiusEnd": 6,
+          "height": {
+            "band": 0.58
+          }
+        },
+        "encoding": {
+          "x": {
+            "field": "share",
+            "type": "quantitative",
+            "axis": null,
+            "scale": {
+              "nice": false
+            }
+          },
+          "color": {
+            "field": "nota",
+            "type": "ordinal",
+            "scale": {
+              "domain": [
+                1,
+                2,
+                3,
+                4,
+                5
+              ],
+              "range": [
+                "#FF453A",
+                "#FF9F0A",
+                "#FFD60A",
+                "#64D2FF",
+                "#30D158"
+              ]
+            },
+            "legend": null
+          },
+          "tooltip": [
+            {
+              "field": "lbl",
+              "title": "Nota"
+            },
+            {
+              "field": "p_txt",
+              "title": "Pedidos"
+            },
+            {
+              "field": "s_txt",
+              "title": "Participação"
+            }
+          ]
+        }
+      },
+      {
+        "mark": {
+          "type": "text",
+          "text": ""
+        },
+        "encoding": {
+          "x": {
+            "field": "xend",
+            "type": "quantitative"
+          }
+        }
+      },
+      {
+        "mark": {
+          "type": "text",
+          "align": "left",
+          "dx": 8,
+          "fontSize": 12,
+          "fontWeight": 600
+        },
+        "encoding": {
+          "x": {
+            "field": "share",
+            "type": "quantitative"
+          },
+          "text": {
+            "field": "s_txt"
+          }
+        }
+      }
+    ]
+  },
+  "config": {
+    "autosize": {
+      "type": "fit",
+      "contains": "padding"
+    },
+    "padding": {
+      "left": 16,
+      "right": 20,
+      "top": 14,
+      "bottom": 10
+    },
+    "background": "transparent",
+    "font": "Segoe UI",
+    "view": {
+      "stroke": null
+    },
+    "axis": {
+      "domain": false,
+      "ticks": false,
+      "grid": false,
+      "labelColor": "#8E8EB0",
+      "labelFontSize": 10.5,
+      "labelPadding": 8,
+      "titleColor": "#6E6E8F",
+      "titleFontSize": 10,
+      "titleFontWeight": "normal"
+    },
+    "axisY": {
+      "grid": false,
+      "labelColor": "#E5E5F0",
+      "labelFontSize": 11.5,
+      "labelPadding": 10,
+      "labelLimit": 220
+    },
+    "legend": {
+      "labelColor": "#C7C7DD",
+      "labelFontSize": 11,
+      "titleColor": "#8E8EB0",
+      "symbolType": "circle",
+      "symbolSize": 90
+    },
+    "title": {
+      "anchor": "start",
+      "font": "Segoe UI Semibold",
+      "fontSize": 15,
+      "color": "#FFFFFF",
+      "subtitleColor": "#8E8EB0",
+      "subtitleFontSize": 12,
+      "offset": 16,
+      "subtitlePadding": 4
+    },
+    "text": {
+      "font": "Segoe UI",
+      "color": "#FFFFFF"
+    },
+    "tooltip": {}
+  }
+}

@@ -1,0 +1,769 @@
+/// Tabela que organiza todas as medidas do relatório
+table _Medidas
+	lineageTag: 8abf9ab3-4490-4be3-a3f0-d6594fabf002
+
+	/// Valor vendido já com desconto, sem pedidos cancelados (mesma base das metas).
+	measure Faturamento =
+			CALCULATE (
+			    SUMX ( F_Vendas, F_Vendas[Quantidade] * F_Vendas[Preco_Unitario] * ( 1 - F_Vendas[Desconto_Perc] ) ),
+			    KEEPFILTERS ( D_Status_Pedido[Status_Pedido] <> "Cancelado" )
+			)
+		formatString: \R$ #,0
+		displayFolder: 01 Vendas
+		lineageTag: 311ca6a1-7f90-4d0b-b1d5-e6357def62bc
+
+	/// Valor de tabela antes do desconto, sem pedidos cancelados.
+	measure 'Receita Bruta' =
+			CALCULATE (
+			    SUMX ( F_Vendas, F_Vendas[Quantidade] * F_Vendas[Preco_Unitario] ),
+			    KEEPFILTERS ( D_Status_Pedido[Status_Pedido] <> "Cancelado" )
+			)
+		formatString: \R$ #,0
+		displayFolder: 01 Vendas
+		lineageTag: f8456529-8254-49b7-9a4f-f21901372619
+
+	/// Total concedido em descontos.
+	measure Descontos = [Receita Bruta] - [Faturamento]
+		formatString: \R$ #,0
+		displayFolder: 01 Vendas
+		lineageTag: 4307a7c9-3d52-454f-bb5c-1c9edf463f4b
+
+	/// Descontos sobre a receita bruta.
+	measure '% Desconto' = DIVIDE ( [Descontos], [Receita Bruta] )
+		formatString: 0.0%
+		displayFolder: 01 Vendas
+		lineageTag: 1598e198-29cb-4e41-81d5-33de1cd1de33
+
+	/// Faturamento de pedidos devolvidos.
+	measure 'Valor Devolvido' =
+			CALCULATE (
+			    SUMX ( F_Vendas, F_Vendas[Quantidade] * F_Vendas[Preco_Unitario] * ( 1 - F_Vendas[Desconto_Perc] ) ),
+			    KEEPFILTERS ( D_Status_Pedido[Status_Pedido] = "Devolvido" )
+			)
+		formatString: \R$ #,0
+		displayFolder: 01 Vendas
+		lineageTag: 2ec2d341-2fc5-47db-b025-17bbd5755a9e
+
+	/// Faturamento menos devoluções: o que de fato ficou com a empresa.
+	measure 'Faturamento Líquido' = [Faturamento] - [Valor Devolvido]
+		formatString: \R$ #,0
+		displayFolder: 01 Vendas
+		lineageTag: e76e2692-c7e7-4b21-ba41-45310280588c
+
+	/// Custo dos produtos dos pedidos entregues.
+	measure Custo =
+			CALCULATE (
+			    SUMX ( F_Vendas, F_Vendas[Quantidade] * F_Vendas[Custo_Unitario] ),
+			    KEEPFILTERS ( D_Status_Pedido[Status_Pedido] = "Entregue" )
+			)
+		formatString: \R$ #,0
+		displayFolder: 01 Vendas
+		lineageTag: 2d4f0fe0-274a-4eb4-ae1f-f285f992cf53
+
+	/// Faturamento líquido menos o custo dos produtos.
+	measure 'Lucro Bruto' = [Faturamento Líquido] - [Custo]
+		formatString: \R$ #,0
+		displayFolder: 01 Vendas
+		lineageTag: df2807e7-b635-4b6e-9bbe-ce7fa7eb4d95
+
+	/// Lucro bruto sobre o faturamento líquido.
+	measure 'Margem Bruta %' = DIVIDE ( [Lucro Bruto], [Faturamento Líquido] )
+		formatString: 0.0%
+		displayFolder: 01 Vendas
+		lineageTag: c5d1d4f3-94e6-434c-aa25-08083d00fc71
+
+	/// Total de frete cobrado, sem pedidos cancelados.
+	measure Frete =
+			CALCULATE (
+			    SUM ( F_Vendas[Valor_Frete] ),
+			    KEEPFILTERS ( D_Status_Pedido[Status_Pedido] <> "Cancelado" )
+			)
+		formatString: \R$ #,0
+		displayFolder: 01 Vendas
+		lineageTag: 87989adf-3ccf-4a55-ab84-48309865ca62
+
+	/// Quantidade de pedidos, sem cancelados.
+	measure Pedidos =
+			CALCULATE (
+			    DISTINCTCOUNT ( F_Vendas[ID_Pedido] ),
+			    KEEPFILTERS ( D_Status_Pedido[Status_Pedido] <> "Cancelado" )
+			)
+		formatString: #,0
+		displayFolder: 02 Pedidos e Clientes
+		lineageTag: bcce2bdb-1cb4-4301-8dc1-1029f6f8ac2e
+
+	/// Unidades vendidas, sem cancelados.
+	measure 'Itens Vendidos' =
+			CALCULATE (
+			    SUM ( F_Vendas[Quantidade] ),
+			    KEEPFILTERS ( D_Status_Pedido[Status_Pedido] <> "Cancelado" )
+			)
+		formatString: #,0
+		displayFolder: 02 Pedidos e Clientes
+		lineageTag: 106a98e3-ba3a-4cbc-b348-3ab7ab42fc8b
+
+	/// Faturamento médio por pedido.
+	measure 'Ticket Médio' = DIVIDE ( [Faturamento], [Pedidos] )
+		formatString: \R$ #,0.00
+		displayFolder: 02 Pedidos e Clientes
+		lineageTag: 3ea9fe45-4801-4501-931c-a6c245b891b6
+
+	/// Média de unidades por pedido.
+	measure 'Itens por Pedido' = DIVIDE ( [Itens Vendidos], [Pedidos] )
+		formatString: 0.00
+		displayFolder: 02 Pedidos e Clientes
+		lineageTag: 3db27698-e26e-41ea-bb04-7c0274516c95
+
+	/// Clientes distintos que compraram no período.
+	measure 'Clientes Ativos' =
+			CALCULATE (
+			    DISTINCTCOUNT ( F_Vendas[ID_Cliente] ),
+			    KEEPFILTERS ( D_Status_Pedido[Status_Pedido] <> "Cancelado" )
+			)
+		formatString: #,0
+		displayFolder: 02 Pedidos e Clientes
+		lineageTag: fee71456-2b41-4c50-9d32-4649e7e04b15
+
+	/// Faturamento médio por cliente ativo.
+	measure 'Faturamento por Cliente' = DIVIDE ( [Faturamento], [Clientes Ativos] )
+		formatString: \R$ #,0.00
+		displayFolder: 02 Pedidos e Clientes
+		lineageTag: 00f22ee9-9bc7-4b88-8b12-b4936246f6ed
+
+	/// Todos os pedidos, inclusive cancelados.
+	measure 'Pedidos Totais' = DISTINCTCOUNT ( F_Vendas[ID_Pedido] )
+		formatString: #,0
+		displayFolder: 02 Pedidos e Clientes
+		lineageTag: a082e016-030f-4df2-a035-680636e04097
+
+	measure 'Pedidos Cancelados' =
+			CALCULATE (
+			    DISTINCTCOUNT ( F_Vendas[ID_Pedido] ),
+			    KEEPFILTERS ( D_Status_Pedido[Status_Pedido] = "Cancelado" )
+			)
+		formatString: #,0
+		displayFolder: 02 Pedidos e Clientes
+		lineageTag: 5948e06d-149f-4432-8b05-36728fc48b22
+
+	measure 'Taxa de Cancelamento' = DIVIDE ( [Pedidos Cancelados], [Pedidos Totais] )
+		formatString: 0.0%
+		displayFolder: 02 Pedidos e Clientes
+		lineageTag: e014e40f-775b-422d-8f76-39f30eb39096
+
+	measure 'Pedidos Devolvidos' =
+			CALCULATE (
+			    DISTINCTCOUNT ( F_Vendas[ID_Pedido] ),
+			    KEEPFILTERS ( D_Status_Pedido[Status_Pedido] = "Devolvido" )
+			)
+		formatString: #,0
+		displayFolder: 02 Pedidos e Clientes
+		lineageTag: 0651d932-c2b6-4398-96ef-9270f099f6e2
+
+	measure 'Taxa de Devolução' = DIVIDE ( [Pedidos Devolvidos], [Pedidos Totais] )
+		formatString: 0.0%
+		displayFolder: 02 Pedidos e Clientes
+		lineageTag: 0185b75d-b3c8-466f-aa08-339ac03596c1
+
+	/// Número médio de parcelas nas compras no cartão de crédito (por pedido).
+	measure 'Média de Parcelas' =
+			CALCULATE (
+			    AVERAGEX ( VALUES ( F_Vendas[ID_Pedido] ), CALCULATE ( MAX ( F_Vendas[Qtd_Parcelas] ) ) ),
+			    KEEPFILTERS ( D_Forma_Pagamento[Forma_Pagamento] = "Cartão de Crédito" )
+			)
+		formatString: 0.0
+		displayFolder: 02 Pedidos e Clientes
+		lineageTag: a67a400b-3ae4-4347-98cf-c37a42ee95c7
+
+	/// Dias entre o pedido e a entrega, só pedidos entregues dos canais digitais.
+	measure 'Prazo Médio de Entrega (dias)' =
+			VAR _Pedidos =
+			    CALCULATETABLE (
+			        SUMMARIZE ( F_Vendas, F_Vendas[ID_Pedido], F_Vendas[Data_Pedido], F_Vendas[Data_Entrega] ),
+			        KEEPFILTERS ( D_Status_Pedido[Status_Pedido] = "Entregue" ),
+			        KEEPFILTERS ( D_Canal_Venda[Canal_Venda] <> "Loja Física" )
+			    )
+			RETURN
+			    AVERAGEX ( _Pedidos, DATEDIFF ( F_Vendas[Data_Pedido], F_Vendas[Data_Entrega], DAY ) )
+		formatString: 0.0
+		displayFolder: 03 Logística e Satisfação
+		lineageTag: 073432ad-0074-4c3f-8164-d84b49b3477f
+
+	/// Média das avaliações (1 a 5), uma por pedido.
+	measure 'Nota Média' =
+			AVERAGEX (
+			    FILTER (
+			        SUMMARIZE ( F_Vendas, F_Vendas[ID_Pedido], F_Vendas[Nota_Avaliacao] ),
+			        NOT ISBLANK ( F_Vendas[Nota_Avaliacao] )
+			    ),
+			    F_Vendas[Nota_Avaliacao]
+			)
+		formatString: 0.00
+		displayFolder: 03 Logística e Satisfação
+		lineageTag: ebc59e79-a252-4280-8305-9feb2d7f33c2
+
+	/// Pedidos avaliados com nota 4 ou 5.
+	measure '% Avaliações Positivas' =
+			VAR _Avaliados =
+			    FILTER (
+			        SUMMARIZE ( F_Vendas, F_Vendas[ID_Pedido], F_Vendas[Nota_Avaliacao] ),
+			        NOT ISBLANK ( F_Vendas[Nota_Avaliacao] )
+			    )
+			RETURN
+			    DIVIDE ( COUNTROWS ( FILTER ( _Avaliados, F_Vendas[Nota_Avaliacao] >= 4 ) ), COUNTROWS ( _Avaliados ) )
+		formatString: 0.0%
+		displayFolder: 03 Logística e Satisfação
+		lineageTag: cf4e9c71-2919-4c1c-b29f-7f5ce3c5b837
+
+	/// Pedidos contados pela data de envio (usa o relacionamento inativo).
+	measure 'Pedidos Enviados (data de envio)' =
+			CALCULATE (
+			    [Pedidos],
+			    USERELATIONSHIP ( F_Vendas[Data_Envio], D_Calendario[Data] )
+			)
+		formatString: #,0
+		displayFolder: 03 Logística e Satisfação
+		lineageTag: 9352f070-a639-4ea9-8077-7327a72fd858
+
+	/// Pedidos entregues contados pela data de entrega (usa o relacionamento inativo).
+	measure 'Pedidos Entregues (data de entrega)' =
+			CALCULATE (
+			    [Pedidos],
+			    USERELATIONSHIP ( F_Vendas[Data_Entrega], D_Calendario[Data] ),
+			    KEEPFILTERS ( D_Status_Pedido[Status_Pedido] = "Entregue" )
+			)
+		formatString: #,0
+		displayFolder: 03 Logística e Satisfação
+		lineageTag: 6ecc17dc-b690-4a32-8d2c-40f168f4f5ac
+
+	/// Faturamento no mesmo período do ano anterior.
+	measure 'Faturamento AA' =
+			IF (
+			    NOT ISBLANK ( [Faturamento] ),
+			    CALCULATE ( [Faturamento], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) )
+			)
+		formatString: \R$ #,0
+		displayFolder: 04 Inteligência de Tempo
+		lineageTag: 286c0126-63ce-4278-bdca-2970c12c2237
+
+	measure 'Var. Faturamento AA' = IF ( NOT ISBLANK ( [Faturamento AA] ), [Faturamento] - [Faturamento AA] )
+		formatString: \R$ #,0
+		displayFolder: 04 Inteligência de Tempo
+		lineageTag: 9138a7fd-02f8-48b2-b99f-1ef5f7bf8d4e
+
+	/// Crescimento em relação ao mesmo período do ano anterior.
+	measure 'Var. % Faturamento AA' = DIVIDE ( [Faturamento] - [Faturamento AA], [Faturamento AA] )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 04 Inteligência de Tempo
+		lineageTag: dcf38428-42df-4672-9be4-9e19ba9acebd
+
+	measure 'Faturamento Acumulado no Ano' = TOTALYTD ( [Faturamento], D_Calendario[Data] )
+		formatString: \R$ #,0
+		displayFolder: 04 Inteligência de Tempo
+		lineageTag: e3d9e5ba-b4da-4a81-9604-40be0c422ba8
+
+	measure 'Faturamento Acumulado no Ano AA' =
+			IF (
+			    NOT ISBLANK ( [Faturamento] ),
+			    CALCULATE ( TOTALYTD ( [Faturamento], D_Calendario[Data] ), SAMEPERIODLASTYEAR ( D_Calendario[Data] ) )
+			)
+		formatString: \R$ #,0
+		displayFolder: 04 Inteligência de Tempo
+		lineageTag: 5e85053d-dc5d-4736-9985-ebab633fb941
+
+	/// Média do faturamento mensal dos últimos 3 meses.
+	measure 'Faturamento Média Móvel 3M' =
+			IF (
+			    NOT ISBLANK ( [Faturamento] ),
+			    CALCULATE (
+			        AVERAGEX ( VALUES ( D_Calendario[Ano Mês Número] ), [Faturamento] ),
+			        DATESINPERIOD ( D_Calendario[Data], MAX ( D_Calendario[Data] ), -3, MONTH )
+			    )
+			)
+		formatString: \R$ #,0
+		displayFolder: 04 Inteligência de Tempo
+		lineageTag: 0677f8a8-7f9b-42cc-938d-3f228dd721a0
+
+	measure Meta = SUM ( F_Metas[Meta_Faturamento] )
+		formatString: \R$ #,0
+		displayFolder: 05 Metas
+		lineageTag: 08ee57b9-4d9c-4b77-82b5-2412adf12fbc
+
+	/// Faturamento sobre a meta.
+	measure 'Atingimento Meta %' = DIVIDE ( [Faturamento], [Meta] )
+		formatString: 0.0%
+		displayFolder: 05 Metas
+		lineageTag: 6350bc9e-eaab-436a-bc40-7fc8265533d5
+
+	/// Quanto faltou (negativo) ou sobrou (positivo) em relação à meta.
+	measure 'Gap Meta' = IF ( NOT ISBLANK ( [Meta] ), [Faturamento] - [Meta] )
+		formatString: \R$ #,0;-\R$ #,0;\R$ 0
+		displayFolder: 05 Metas
+		lineageTag: 652868f1-d239-4ca8-9115-0dc7fd052fa1
+
+	measure 'Lojas que Bateram a Meta' =
+			IF (
+			    NOT ISBLANK ( [Meta] ),
+			    COUNTROWS ( FILTER ( VALUES ( D_Loja[ID_Loja] ), [Meta] > 0 && [Faturamento] >= [Meta] ) ) + 0
+			)
+		formatString: #,0
+		displayFolder: 05 Metas
+		lineageTag: 78f5fba1-d19e-4695-b228-708149aedbb7
+
+	/// Big numbers executivos: faturamento em destaque com frase-resumo, barras de contexto (ano anterior e meta) e faixa com 5 KPIs. Use no visual HTML Content.
+	measure 'HTML KPI Bento' =
+			VAR _Fat = [Faturamento]
+			VAR _AA = [Faturamento AA]
+			VAR _Var = [Var. % Faturamento AA]
+			VAR _Meta = [Meta]
+			VAR _At = [Atingimento Meta %]
+			VAR _UmAno = HASONEVALUE ( D_Calendario[Ano] )
+			VAR _Ano = IF ( _UmAno, VALUES ( D_Calendario[Ano] ) )
+			VAR _Comp = _UmAno && NOT ISBLANK ( _AA )
+			VAR _AnoMin = YEAR ( CALCULATE ( MIN ( F_Vendas[Data_Pedido] ) ) )
+			VAR _AnoMax = YEAR ( CALCULATE ( MAX ( F_Vendas[Data_Pedido] ) ) )
+			VAR _Titulo = IF ( _UmAno, "FATURAMENTO " & _Ano, "FATURAMENTO " & _AnoMin & "–" & _AnoMax )
+			VAR _FatTxt = FORMAT ( _Fat / 1000000, "#,0.0" )
+			VAR _AATxt = FORMAT ( _AA / 1000000, "#,0.0" )
+			VAR _MetaTxt = FORMAT ( _Meta / 1000000, "#,0.0" )
+			VAR _AtTxt = FORMAT ( _At, "0.0%" )
+			VAR _VarTxt = FORMAT ( ABS ( _Var ), "0.0%" )
+			VAR _CorMeta = IF ( _At >= 1, "#1E7A35", "#B86E00" )
+			VAR _CorVar = IF ( _Var >= 0, "#1E7A35", "#B3261E" )
+			VAR _MetaSpan = "<span style='color:" & _CorMeta & "'>" & _AtTxt & " da meta</span>"
+			VAR _Frase =
+			    SWITCH (
+			        TRUE (),
+			        _Comp,
+			            "A Diagone vendeu <span style='color:" & _CorVar & "'>" & _VarTxt & IF ( _Var >= 0, " a mais", " a menos" ) & "</span> que em " & ( _Ano - 1 ) & " e chegou a " & _MetaSpan & ".",
+			        _UmAno, "Primeiro ano da série: a Diagone chegou a " & _MetaSpan & ".",
+			        "No período, a Diagone chegou a " & _MetaSpan & ". Filtre um ano para comparar."
+			    )
+			VAR _MaxAA = MAX ( _Fat, _AA )
+			VAR _wFatAA = FORMAT ( ROUND ( DIVIDE ( _Fat, _MaxAA ) * 100, 0 ), "0" )
+			VAR _mAA = FORMAT ( ROUND ( DIVIDE ( _AA, _MaxAA ) * 100, 0 ), "0" )
+			VAR _MaxMeta = MAX ( _Fat, _Meta )
+			VAR _wFatMeta = FORMAT ( ROUND ( DIVIDE ( _Fat, _MaxMeta ) * 100, 0 ), "0" )
+			VAR _mMeta = FORMAT ( ROUND ( DIVIDE ( _Meta, _MaxMeta ) * 100, 0 ), "0" )
+			VAR _BarraAA =
+			    IF (
+			        _Comp,
+			        "<div class='ctx'><div class='ch'><span>vs. " & ( _Ano - 1 ) & " · R$ " & _AATxt & " mi</span><span style='color:" & _CorVar & "'>" & IF ( _Var >= 0, "+", "−" ) & _VarTxt & "</span></div>"
+			            & "<div class='tr'><div class='fl' style='width:" & _wFatAA & "%;background:#0071E3'></div><div class='mk' style='left:" & _mAA & "%'></div></div></div>"
+			    )
+			VAR _BarraMeta =
+			    "<div class='ctx'><div class='ch'><span>vs. meta · R$ " & _MetaTxt & " mi</span><span style='color:" & _CorMeta & "'>" & _AtTxt & "</span></div>"
+			        & "<div class='tr'><div class='fl' style='width:" & _wFatMeta & "%;background:" & IF ( _At >= 1, "#34C759", "#FF9F0A" ) & "'></div><div class='mk' style='left:" & _mMeta & "%'></div></div></div>"
+			
+			VAR _LB = [Lucro Bruto]
+			VAR _MG = [Margem Bruta %]
+			VAR _PD = [Pedidos]
+			VAR _TK = [Ticket Médio]
+			VAR _CL = [Clientes Ativos]
+			VAR _vLB = DIVIDE ( _LB, CALCULATE ( [Lucro Bruto], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) ) ) - 1
+			VAR _vMG = ( _MG - CALCULATE ( [Margem Bruta %], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) ) ) * 100
+			VAR _vPD = DIVIDE ( _PD, CALCULATE ( [Pedidos], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) ) ) - 1
+			VAR _vTK = DIVIDE ( _TK, CALCULATE ( [Ticket Médio], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) ) ) - 1
+			VAR _vCL = DIVIDE ( _CL, CALCULATE ( [Clientes Ativos], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) ) ) - 1
+			VAR _dLB = IF ( _Comp, "<p class='dl " & IF ( _vLB >= 0, "up'>▲ ", "dn'>▼ " ) & FORMAT ( ABS ( _vLB ), "0.0%" ) & "</p>" )
+			VAR _dMG = IF ( _Comp, "<p class='dl " & IF ( _vMG >= 0, "up'>▲ ", "dn'>▼ " ) & FORMAT ( ABS ( _vMG ), "0.0" ) & " p.p.</p>" )
+			VAR _dPD = IF ( _Comp, "<p class='dl " & IF ( _vPD >= 0, "up'>▲ ", "dn'>▼ " ) & FORMAT ( ABS ( _vPD ), "0.0%" ) & "</p>" )
+			VAR _dTK = IF ( _Comp, "<p class='dl " & IF ( _vTK >= 0, "up'>▲ ", "dn'>▼ " ) & FORMAT ( ABS ( _vTK ), "0.0%" ) & "</p>" )
+			VAR _dCL = IF ( _Comp, "<p class='dl " & IF ( _vCL >= 0, "up'>▲ ", "dn'>▼ " ) & FORMAT ( ABS ( _vCL ), "0.0%" ) & "</p>" )
+			VAR _K = "<div class='k'><p class='lab'>"
+			VAR _V = "</p><p class='v'>"
+			VAR _Css =
+			    "<style>
+			.wrap{font-family:'Segoe UI',sans-serif;background:#FFFFFF;border-radius:22px;padding:20px 24px;box-sizing:border-box;height:100%;display:flex;flex-direction:column;justify-content:space-between}
+			.top{display:grid;grid-template-columns:1.15fr 1fr;gap:32px;align-items:center;padding-bottom:16px;border-bottom:1px solid #E5E5EA}
+			.lab{font-size:12px;color:#6E6E73;margin:0;letter-spacing:.04em}
+			.gt{font-size:64px;font-weight:600;line-height:1;margin:8px 0 10px;letter-spacing:-.02em;background:linear-gradient(90deg,#0071E3,#7D4CDB);-webkit-background-clip:text;background-clip:text;color:transparent}
+			.fr{font-size:15px;color:#1D1D1F;margin:0}
+			.ctx{margin:8px 0}
+			.ch{display:flex;justify-content:space-between;font-size:12px;color:#6E6E73}
+			.tr{height:10px;background:#F2F2F7;border-radius:5px;margin-top:6px;position:relative}
+			.fl{height:10px;border-radius:5px}
+			.mk{position:absolute;top:-4px;width:2px;height:18px;background:#1D1D1F;border-radius:1px}
+			.row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding-top:14px}
+			.k{padding:0 16px;border-left:1px solid #E5E5EA;transition:transform .25s ease}
+			.k:first-child{border-left:none;padding-left:0}
+			.k:hover{transform:translateY(-2px)}
+			.v{font-size:24px;font-weight:600;color:#1D1D1F;margin:4px 0 2px}
+			.dl{font-size:12px;margin:0;font-weight:600}
+			.up{color:#1E7A35}
+			.dn{color:#B3261E}
+			</style>"
+			RETURN
+			    IF (
+			        NOT ISBLANK ( _Fat ),
+			        _Css
+			            & "<div class='wrap'><div class='top'>"
+			            & "<div><p class='lab'>" & _Titulo & "</p><p class='gt'>R$ " & _FatTxt & " mi</p><p class='fr'>" & _Frase & "</p></div>"
+			            & "<div>" & _BarraAA & _BarraMeta & "</div>"
+			            & "</div><div class='row'>"
+			            & _K & "Lucro bruto" & _V & "R$ " & FORMAT ( _LB / 1000000, "#,0.0" ) & " mi</p>" & _dLB & "</div>"
+			            & _K & "Margem bruta" & _V & FORMAT ( _MG, "0.0%" ) & "</p>" & _dMG & "</div>"
+			            & _K & "Pedidos" & _V & FORMAT ( _PD, "#,0" ) & "</p>" & _dPD & "</div>"
+			            & _K & "Ticket médio" & _V & "R$ " & FORMAT ( _TK, "#,0" ) & "</p>" & _dTK & "</div>"
+			            & _K & "Clientes ativos" & _V & FORMAT ( _CL, "#,0" ) & "</p>" & _dCL & "</div>"
+			            & "</div></div>"
+			    )
+		displayFolder: 06 HTML
+		lineageTag: b54c15ce-3952-4ed2-bb11-2cc9f2ed8d38
+
+	/// Anel de atingimento da meta com o faturamento no centro (tema escuro).
+	measure 'HTML Hero Anel' =
+			VAR _Fat = [Faturamento]
+			VAR _AA = [Faturamento AA]
+			VAR _Var = [Var. % Faturamento AA]
+			VAR _At = [Atingimento Meta %]
+			VAR _UmAno = HASONEVALUE ( D_Calendario[Ano] )
+			VAR _Ano = IF ( _UmAno, VALUES ( D_Calendario[Ano] ) )
+			VAR _Comp = _UmAno && NOT ISBLANK ( _AA )
+			VAR _Titulo = IF ( _UmAno, "FATURAMENTO " & _Ano, "FATURAMENTO TOTAL" )
+			VAR _Circ = 2 * PI () * 118
+			VAR _Dash = FORMAT ( ROUND ( _Circ * MIN ( _At, 1 ), 0 ), "0" )
+			VAR _CircTxt = FORMAT ( ROUND ( _Circ, 0 ), "0" )
+			VAR _Pill =
+			    IF (
+			        _Comp,
+			        "<div class='pill' style='" & IF ( _Var >= 0, "background:rgba(48,209,88,.15);color:#30D158'>&#9650; ", "background:rgba(255,69,58,.15);color:#FF453A'>&#9660; " )
+			            & FORMAT ( ABS ( _Var ), "0.0%" ) & " vs. " & ( _Ano - 1 ) & "</div>",
+			        "<div class='pill' style='background:rgba(255,255,255,.08);color:#A1A1C0'>2023 a 2025</div>"
+			    )
+			VAR _Css = "<style>html,body{margin:0;background:transparent;overflow:hidden}::-webkit-scrollbar{display:none}.h{position:relative;width:400px;height:328px;font-family:'Segoe UI',sans-serif;color:#fff}.h svg{position:absolute;left:0;top:0}.t{position:absolute;left:22px;top:18px;font-size:11px;letter-spacing:.14em;color:#8E8EB0}.c{position:absolute;left:0;right:0;top:112px;text-align:center}.s{font-size:13px;color:#8E8EB0}.n{font-size:38px;font-weight:700;letter-spacing:-.02em;line-height:1.2}.pill{display:inline-block;margin-top:6px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:10px}</style>"
+			VAR _Svg =
+			    "<svg width='400' height='328' viewBox='0 0 400 328'><defs><linearGradient id='rg' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#64D2FF'/><stop offset='.55' stop-color='#5E5CE6'/><stop offset='1' stop-color='#BF5AF2'/></linearGradient>"
+			        & "<filter id='gl' x='-30%' y='-30%' width='160%' height='160%'><feGaussianBlur stdDeviation='7' result='b'/><feMerge><feMergeNode in='b'/><feMergeNode in='SourceGraphic'/></feMerge></filter></defs>"
+			        & "<circle cx='200' cy='172' r='118' fill='none' stroke='rgba(255,255,255,.07)' stroke-width='16'/>"
+			        & "<circle cx='200' cy='172' r='118' fill='none' stroke='url(#rg)' stroke-width='16' stroke-linecap='round' stroke-dasharray='" & _Dash & " " & _CircTxt & "' transform='rotate(-90 200 172)' filter='url(#gl)'/></svg>"
+			RETURN
+			    IF (
+			        NOT ISBLANK ( _Fat ),
+			        _Css & "<div class='h'>" & _Svg & "<div class='t'>" & _Titulo & "</div><div class='c'><div class='s'>" & FORMAT ( _At, "0.0%" ) & " da meta</div><div class='n'>R$ " & FORMAT ( _Fat / 1000000, "#,0.0" ) & " mi</div>" & _Pill & "</div></div>"
+			    )
+		displayFolder: 06 HTML
+		lineageTag: c54ada90-2e88-402c-9653-8afc6df653b1
+
+	/// Card de destaque da região que mais faturou (tema escuro).
+	measure 'HTML Destaque Regiao' =
+			VAR _Tot = [Faturamento]
+			VAR _TopReg = TOPN ( 1, ADDCOLUMNS ( VALUES ( D_Clientes[Regiao] ), "@f", [Faturamento] ), [@f], DESC )
+			VAR _Reg = MAXX ( _TopReg, D_Clientes[Regiao] )
+			VAR _FatReg = MAXX ( _TopReg, [@f] )
+			VAR _Share = DIVIDE ( _FatReg, _Tot )
+			VAR _TopUF = TOPN ( 1, ADDCOLUMNS ( CALCULATETABLE ( VALUES ( D_Clientes[UF] ), D_Clientes[Regiao] = _Reg ), "@u", [Faturamento] ), [@u], DESC )
+			VAR _UF = MAXX ( _TopUF, D_Clientes[UF] )
+			VAR _FatUF = MAXX ( _TopUF, [@u] )
+			VAR _NUF = COUNTROWS ( FILTER ( VALUES ( D_Clientes[UF] ), NOT ISBLANK ( [Faturamento] ) ) )
+			VAR _NLoja = COUNTROWS ( FILTER ( VALUES ( D_Loja[ID_Loja] ), NOT ISBLANK ( [Faturamento] ) ) )
+			VAR _Css = "<style>html,body{margin:0;background:transparent;overflow:hidden}::-webkit-scrollbar{display:none}.w{position:relative;width:274px;height:328px;font-family:'Segoe UI',sans-serif;color:#fff}.k{position:absolute;left:0;top:70px;width:250px;height:150px;box-sizing:border-box;padding:20px 22px;border-radius:22px;background:linear-gradient(160deg,rgba(125,76,219,.45),rgba(10,132,255,.25));border:1px solid rgba(191,90,242,.4);box-shadow:0 20px 50px rgba(0,0,0,.35)}.r{font-size:13px;color:#64D2FF;font-weight:600}.v{font-size:36px;font-weight:700;letter-spacing:-.02em;margin-top:4px}.d{font-size:12px;color:#E5E5F0;margin-top:2px;line-height:1.35}.f{position:absolute;left:22px;top:236px;font-size:11px;color:#8E8EB0}</style>"
+			RETURN
+			    IF (
+			        NOT ISBLANK ( _Tot ),
+			        _Css & "<div class='w'><div class='k'><div class='r'>" & _Reg & "</div><div class='v'>R$ " & FORMAT ( _FatReg / 1000000, "#,0.0" ) & " mi</div><div class='d'>"
+			            & FORMAT ( _Share, "0%" ) & " do faturamento · " & _UF & " lidera com R$ " & FORMAT ( _FatUF / 1000000, "#,0.0" ) & " mi</div></div>"
+			            & "<div class='f'>" & _NUF & " estados atendidos · " & _NLoja & " lojas</div></div>"
+			    )
+		displayFolder: 06 HTML
+		lineageTag: 431fa1ae-e781-452d-b4d5-fd288690dc88
+
+	/// Faixa com 5 big numbers e variação sobre o ano anterior (tema escuro).
+	measure 'HTML KPI Faixa' =
+			VAR _UmAno = HASONEVALUE ( D_Calendario[Ano] )
+			VAR _Comp = _UmAno && NOT ISBLANK ( [Faturamento AA] )
+			VAR _LB = [Lucro Bruto]
+			VAR _MG = [Margem Bruta %]
+			VAR _PD = [Pedidos]
+			VAR _TK = [Ticket Médio]
+			VAR _CL = [Clientes Ativos]
+			VAR _vLB = DIVIDE ( _LB, CALCULATE ( [Lucro Bruto], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) ) ) - 1
+			VAR _vMG = ( _MG - CALCULATE ( [Margem Bruta %], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) ) ) * 100
+			VAR _vPD = DIVIDE ( _PD, CALCULATE ( [Pedidos], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) ) ) - 1
+			VAR _vTK = DIVIDE ( _TK, CALCULATE ( [Ticket Médio], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) ) ) - 1
+			VAR _vCL = DIVIDE ( _CL, CALCULATE ( [Clientes Ativos], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) ) ) - 1
+			VAR _dLB = IF ( _Comp, "<span class='" & IF ( _vLB >= 0, "up'>&#9650; ", "dn'>&#9660; " ) & FORMAT ( ABS ( _vLB ), "0.0%" ) & "</span>", "<span class='nt'>no período</span>" )
+			VAR _dMG = IF ( _Comp, "<span class='" & IF ( _vMG >= 0, "up'>&#9650; ", "dn'>&#9660; " ) & FORMAT ( ABS ( _vMG ), "0.0" ) & " p.p.</span>", "<span class='nt'>no período</span>" )
+			VAR _dPD = IF ( _Comp, "<span class='" & IF ( _vPD >= 0, "up'>&#9650; ", "dn'>&#9660; " ) & FORMAT ( ABS ( _vPD ), "0.0%" ) & "</span>", "<span class='nt'>no período</span>" )
+			VAR _dTK = IF ( _Comp, "<span class='" & IF ( _vTK >= 0, "up'>&#9650; ", "dn'>&#9660; " ) & FORMAT ( ABS ( _vTK ), "0.0%" ) & "</span>", "<span class='nt'>no período</span>" )
+			VAR _dCL = IF ( _Comp, "<span class='" & IF ( _vCL >= 0, "up'>&#9650; ", "dn'>&#9660; " ) & FORMAT ( ABS ( _vCL ), "0.0%" ) & "</span>", "<span class='nt'>no período</span>" )
+			VAR _K = "<div class='c'><div class='l'>"
+			VAR _V = "</div><div class='v'>"
+			VAR _Css = "<style>html,body{margin:0;background:transparent;overflow:hidden}::-webkit-scrollbar{display:none}.g{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:1036px;height:88px;font-family:'Segoe UI',sans-serif;color:#fff}.c{box-sizing:border-box;height:84px;padding:12px 18px;border-radius:20px;background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.10);transition:transform .25s ease}.c:hover{transform:translateY(-2px);border-color:rgba(100,210,255,.35)}.l{font-size:11px;letter-spacing:.14em;color:#8E8EB0}.v{font-size:22px;font-weight:600;line-height:1.2;margin-top:4px}.up{color:#30D158;font-size:12px;font-weight:600}.dn{color:#FF453A;font-size:12px;font-weight:600}.nt{color:#6E6E8F;font-size:12px}</style>"
+			RETURN
+			    IF (
+			        NOT ISBLANK ( [Faturamento] ),
+			        _Css & "<div class='g'>"
+			            & _K & "LUCRO BRUTO" & _V & "R$ " & FORMAT ( _LB / 1000000, "#,0.0" ) & " mi</div>" & _dLB & "</div>"
+			            & _K & "MARGEM BRUTA" & _V & FORMAT ( _MG, "0.0%" ) & "</div>" & _dMG & "</div>"
+			            & _K & "PEDIDOS" & _V & FORMAT ( _PD, "#,0" ) & "</div>" & _dPD & "</div>"
+			            & _K & "TICKET MÉDIO" & _V & "R$ " & FORMAT ( _TK, "#,0" ) & "</div>" & _dTK & "</div>"
+			            & _K & "CLIENTES ATIVOS" & _V & FORMAT ( _CL, "#,0" ) & "</div>" & _dCL & "</div>"
+			            & "</div>"
+			    )
+		displayFolder: 06 HTML
+		lineageTag: 9fabd25b-7ff0-4dda-ad02-2651f42a9f07
+
+	/// Ranking das lojas por faturamento com o atingimento da meta (tema escuro).
+	measure 'HTML Ranking Lojas' =
+			VAR _T =
+			    TOPN (
+			        6,
+			        ADDCOLUMNS ( FILTER ( VALUES ( D_Loja[Nome_Loja] ), NOT ISBLANK ( [Faturamento] ) ), "@f", [Faturamento], "@m", [Meta] ),
+			        [@f], DESC
+			    )
+			VAR _N = [Lojas que Bateram a Meta]
+			VAR _UmAno = HASONEVALUE ( D_Calendario[Ano] )
+			VAR _Sub = IF ( _N = 1, "1 loja bateu a meta", _N & " lojas bateram a meta" ) & IF ( _UmAno, " em " & VALUES ( D_Calendario[Ano] ), " no período" )
+			VAR _Rows =
+			    CONCATENATEX (
+			        _T,
+			        VAR _r = RANKX ( _T, [@f], , DESC )
+			        VAR _a = DIVIDE ( [@f], [@m] )
+			        VAR _cor = IF ( _a >= 1, "#30D158", "#64D2FF" )
+			        RETURN
+			            "<div class='lr'><span class='rk'>" & FORMAT ( _r, "00" ) & "</span><span class='ln'>" & SUBSTITUTE ( D_Loja[Nome_Loja], "Diagone ", "" )
+			                & "</span><div class='lb'><div style='width:" & FORMAT ( ROUND ( MIN ( _a, 1 ) * 100, 0 ), "0" ) & "%;background:linear-gradient(90deg,#5E5CE6," & _cor & ")'></div></div><span class='lp' style='color:" & _cor & "'>"
+			                & FORMAT ( _a, "0.0%" ) & "</span></div>",
+			        "",
+			        [@f], DESC
+			    )
+			VAR _Css = "<style>html,body{margin:0;background:transparent;overflow:hidden}::-webkit-scrollbar{display:none}.w{box-sizing:border-box;width:404px;height:256px;padding:18px 22px;font-family:'Segoe UI',sans-serif;color:#fff}.h{font-size:15px;font-weight:600}.s{font-size:12px;color:#8E8EB0;margin-top:2px}.lr{display:flex;align-items:center;gap:10px;margin-top:14px}.rk{font-size:11px;color:#6E6E8F;width:18px}.ln{font-size:13px;width:92px;color:#E5E5F0;white-space:nowrap;overflow:hidden}.lb{flex:1;height:8px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden}.lb div{height:8px;border-radius:4px}.lp{font-size:12px;font-weight:600;width:48px;text-align:right}</style>"
+			RETURN
+			    IF (
+			        NOT ISBLANK ( [Faturamento] ),
+			        _Css & "<div class='w'><div class='h'>Atingimento da meta por loja</div><div class='s'>" & _Sub & "</div>" & _Rows & "</div>"
+			    )
+		displayFolder: 06 HTML
+		lineageTag: 13677f58-c42b-4f7a-ac3a-f53355d8f0cc
+
+	/// Faixa de 5 KPIs da página Vendas e produtos (tema escuro).
+	measure 'HTML KPI Vendas' =
+			VAR _Comp = HASONEVALUE ( D_Calendario[Ano] ) && NOT ISBLANK ( [Faturamento AA] )
+			VAR _c1 = [Faturamento]
+			VAR _p1 = CALCULATE ( [Faturamento], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) )
+			VAR _x1 = DIVIDE ( _c1, _p1 ) - 1
+			VAR _d1 = IF ( _Comp && NOT ISBLANK ( _p1 ), "<span class='" & IF ( _x1 >= 0, "up", "dn" ) & "'>" & IF ( _x1 >= 0, "&#9650; ", "&#9660; " ) & FORMAT ( ABS ( _x1 ), "0.0%" ) & "</span>", "<span class='nt'>no período</span>" )
+			VAR _c2 = [Itens Vendidos]
+			VAR _p2 = CALCULATE ( [Itens Vendidos], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) )
+			VAR _x2 = DIVIDE ( _c2, _p2 ) - 1
+			VAR _d2 = IF ( _Comp && NOT ISBLANK ( _p2 ), "<span class='" & IF ( _x2 >= 0, "up", "dn" ) & "'>" & IF ( _x2 >= 0, "&#9650; ", "&#9660; " ) & FORMAT ( ABS ( _x2 ), "0.0%" ) & "</span>", "<span class='nt'>no período</span>" )
+			VAR _c3 = [Ticket Médio]
+			VAR _p3 = CALCULATE ( [Ticket Médio], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) )
+			VAR _x3 = DIVIDE ( _c3, _p3 ) - 1
+			VAR _d3 = IF ( _Comp && NOT ISBLANK ( _p3 ), "<span class='" & IF ( _x3 >= 0, "up", "dn" ) & "'>" & IF ( _x3 >= 0, "&#9650; ", "&#9660; " ) & FORMAT ( ABS ( _x3 ), "0.0%" ) & "</span>", "<span class='nt'>no período</span>" )
+			VAR _c4 = [% Desconto]
+			VAR _p4 = CALCULATE ( [% Desconto], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) )
+			VAR _x4 = ( _c4 - _p4 ) * 100
+			VAR _d4 = IF ( _Comp && NOT ISBLANK ( _p4 ), "<span class='" & IF ( _x4 <= 0, "up", "dn" ) & "'>" & IF ( _x4 >= 0, "&#9650; ", "&#9660; " ) & FORMAT ( ABS ( _x4 ), "0.0" ) & " p.p.</span>", "<span class='nt'>no período</span>" )
+			VAR _c5 = [Margem Bruta %]
+			VAR _p5 = CALCULATE ( [Margem Bruta %], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) )
+			VAR _x5 = ( _c5 - _p5 ) * 100
+			VAR _d5 = IF ( _Comp && NOT ISBLANK ( _p5 ), "<span class='" & IF ( _x5 >= 0, "up", "dn" ) & "'>" & IF ( _x5 >= 0, "&#9650; ", "&#9660; " ) & FORMAT ( ABS ( _x5 ), "0.0" ) & " p.p.</span>", "<span class='nt'>no período</span>" )
+			VAR _K = "<div class='c'><div class='l'>"
+			VAR _V = "</div><div class='v'>"
+			VAR _Css = "<style>html,body{margin:0;background:transparent;overflow:hidden}::-webkit-scrollbar{display:none}.g{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:1036px;height:88px;font-family:'Segoe UI',sans-serif;color:#fff}.c{box-sizing:border-box;height:84px;padding:12px 18px;border-radius:20px;background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.10);transition:transform .25s ease}.c:hover{transform:translateY(-2px);border-color:rgba(100,210,255,.35)}.l{font-size:11px;letter-spacing:.14em;color:#8E8EB0}.v{font-size:22px;font-weight:600;line-height:1.2;margin-top:4px}.up{color:#30D158;font-size:12px;font-weight:600}.dn{color:#FF453A;font-size:12px;font-weight:600}.nu{color:#A1A1C0;font-size:12px;font-weight:600}.nt{color:#6E6E8F;font-size:12px}</style>"
+			RETURN
+			    IF (
+			        NOT ISBLANK ( [Faturamento] ),
+			        _Css & "<div class='g'>"
+			            & _K & "FATURAMENTO" & _V & "R$ " & FORMAT ( _c1 / 1000000, "#,0.0" ) & " mi" & "</div>" & _d1 & "</div>"
+			            & _K & "ITENS VENDIDOS" & _V & FORMAT ( _c2, "#,0" ) & "</div>" & _d2 & "</div>"
+			            & _K & "TICKET MÉDIO" & _V & "R$ " & FORMAT ( _c3, "#,0" ) & "</div>" & _d3 & "</div>"
+			            & _K & "DESCONTO MÉDIO" & _V & FORMAT ( _c4, "0.0%" ) & "</div>" & _d4 & "</div>"
+			            & _K & "MARGEM BRUTA" & _V & FORMAT ( _c5, "0.0%" ) & "</div>" & _d5 & "</div>"
+			            & "</div>"
+			    )
+		displayFolder: 06 HTML
+		lineageTag: 0c707601-8eb0-4a79-b9c6-839de1b3e41e
+
+	/// Top 7 produtos por faturamento com variação sobre o ano anterior (tema escuro).
+	measure 'HTML Top Produtos' =
+			VAR _UmAno = HASONEVALUE ( D_Calendario[Ano] )
+			VAR _T =
+			    TOPN (
+			        7,
+			        ADDCOLUMNS (
+			            FILTER ( VALUES ( D_Produto[Nome_Produto] ), NOT ISBLANK ( [Faturamento] ) ),
+			            "@f", [Faturamento],
+			            "@a", [Faturamento AA],
+			            "@mc", CALCULATE ( MAX ( D_Produto[Marca] ) ) & " · " & CALCULATE ( MAX ( D_Produto[Categoria] ) )
+			        ),
+			        [@f], DESC
+			    )
+			VAR _Max = MAXX ( _T, [@f] )
+			VAR _Rows =
+			    CONCATENATEX (
+			        _T,
+			        VAR _r = RANKX ( _T, [@f], , DESC )
+			        VAR _v = DIVIDE ( [@f], [@a] ) - 1
+			        VAR _w = FORMAT ( ROUND ( DIVIDE ( [@f], _Max ) * 100, 0 ), "0" )
+			        VAR _pill =
+			            IF (
+			                _UmAno && [@a] > 0,
+			                "<span class='p " & IF ( _v >= 0, "pu'>&#9650; ", "pd'>&#9660; " ) & FORMAT ( ABS ( _v ), "0%" ) & "</span>",
+			                "<span class='p pn'>—</span>"
+			            )
+			        RETURN
+			            "<div class='r'><span class='rk'>" & FORMAT ( _r, "00" ) & "</span><div class='nm'><div class='n1'>" & D_Produto[Nome_Produto]
+			                & "</div><div class='n2'>" & [@mc] & "</div></div><div class='bw'><div class='b' style='width:" & _w
+			                & "%'></div></div><span class='vl'>R$ " & FORMAT ( [@f] / 1000, "#,0" ) & " mil</span>" & _pill & "</div>",
+			        "",
+			        [@f], DESC
+			    )
+			VAR _Css = "<style>html,body{margin:0;background:transparent;overflow:hidden}::-webkit-scrollbar{display:none}.w{box-sizing:border-box;width:100%;height:292px;padding:16px 22px;font-family:'Segoe UI',sans-serif;color:#fff}.h{font-size:15px;font-weight:600}.s{font-size:12px;color:#8E8EB0;margin:2px 0 8px}.r{display:flex;align-items:center;gap:12px;height:30px}.rk{font-size:11px;color:#6E6E8F;width:18px}.nm{width:210px;overflow:hidden}.n1{font-size:12.5px;color:#E5E5F0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.n2{font-size:10px;color:#6E6E8F;white-space:nowrap}.bw{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}.b{height:6px;border-radius:3px;background:linear-gradient(90deg,#5E5CE6,#64D2FF)}.vl{font-size:12.5px;font-weight:600;width:84px;text-align:right}.p{font-size:11px;font-weight:600;width:52px;text-align:center;padding:2px 0;border-radius:8px}.pu{color:#30D158;background:rgba(48,209,88,.12)}.pd{color:#FF453A;background:rgba(255,69,58,.12)}.pn{color:#6E6E8F;background:rgba(255,255,255,.05)}</style>"
+			RETURN
+			    IF (
+			        NOT ISBLANK ( [Faturamento] ),
+			        _Css & "<div class='w'><div class='h'>Produtos que mais faturam</div><div class='s'>Top 7 do período · selo = variação sobre o ano anterior</div>" & _Rows & "</div>"
+			    )
+		displayFolder: 06 HTML
+		lineageTag: 8a450cef-6a64-428b-a528-f9b5f978862f
+
+	/// Faixa de 5 KPIs da página Clientes e regiões (tema escuro).
+	measure 'HTML KPI Clientes' =
+			VAR _Comp = HASONEVALUE ( D_Calendario[Ano] ) && NOT ISBLANK ( [Faturamento AA] )
+			VAR _c1 = [Clientes Ativos]
+			VAR _p1 = CALCULATE ( [Clientes Ativos], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) )
+			VAR _x1 = DIVIDE ( _c1, _p1 ) - 1
+			VAR _d1 = IF ( _Comp && NOT ISBLANK ( _p1 ), "<span class='" & IF ( _x1 >= 0, "up", "dn" ) & "'>" & IF ( _x1 >= 0, "&#9650; ", "&#9660; " ) & FORMAT ( ABS ( _x1 ), "0.0%" ) & "</span>", "<span class='nt'>no período</span>" )
+			VAR _c2 = [Faturamento por Cliente]
+			VAR _p2 = CALCULATE ( [Faturamento por Cliente], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) )
+			VAR _x2 = DIVIDE ( _c2, _p2 ) - 1
+			VAR _d2 = IF ( _Comp && NOT ISBLANK ( _p2 ), "<span class='" & IF ( _x2 >= 0, "up", "dn" ) & "'>" & IF ( _x2 >= 0, "&#9650; ", "&#9660; " ) & FORMAT ( ABS ( _x2 ), "0.0%" ) & "</span>", "<span class='nt'>no período</span>" )
+			VAR _c3 = DIVIDE ( [Pedidos], [Clientes Ativos] )
+			VAR _p3 = CALCULATE ( DIVIDE ( [Pedidos], [Clientes Ativos] ), SAMEPERIODLASTYEAR ( D_Calendario[Data] ) )
+			VAR _x3 = _c3 - _p3
+			VAR _d3 = IF ( _Comp && NOT ISBLANK ( _p3 ), "<span class='" & IF ( _x3 >= 0, "up", "dn" ) & "'>" & IF ( _x3 >= 0, "&#9650; ", "&#9660; " ) & FORMAT ( ABS ( _x3 ), "0.00" ) & "</span>", "<span class='nt'>no período</span>" )
+			VAR _c4 = [Itens por Pedido]
+			VAR _p4 = CALCULATE ( [Itens por Pedido], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) )
+			VAR _x4 = _c4 - _p4
+			VAR _d4 = IF ( _Comp && NOT ISBLANK ( _p4 ), "<span class='" & IF ( _x4 >= 0, "up", "dn" ) & "'>" & IF ( _x4 >= 0, "&#9650; ", "&#9660; " ) & FORMAT ( ABS ( _x4 ), "0.00" ) & "</span>", "<span class='nt'>no período</span>" )
+			VAR _c5 = [Média de Parcelas]
+			VAR _p5 = CALCULATE ( [Média de Parcelas], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) )
+			VAR _x5 = _c5 - _p5
+			VAR _d5 = IF ( _Comp && NOT ISBLANK ( _p5 ), "<span class='" & "nu" & "'>" & IF ( _x5 >= 0, "&#9650; ", "&#9660; " ) & FORMAT ( ABS ( _x5 ), "0.0" ) & "x</span>", "<span class='nt'>no período</span>" )
+			VAR _K = "<div class='c'><div class='l'>"
+			VAR _V = "</div><div class='v'>"
+			VAR _Css = "<style>html,body{margin:0;background:transparent;overflow:hidden}::-webkit-scrollbar{display:none}.g{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:1036px;height:88px;font-family:'Segoe UI',sans-serif;color:#fff}.c{box-sizing:border-box;height:84px;padding:12px 18px;border-radius:20px;background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.10);transition:transform .25s ease}.c:hover{transform:translateY(-2px);border-color:rgba(100,210,255,.35)}.l{font-size:11px;letter-spacing:.14em;color:#8E8EB0}.v{font-size:22px;font-weight:600;line-height:1.2;margin-top:4px}.up{color:#30D158;font-size:12px;font-weight:600}.dn{color:#FF453A;font-size:12px;font-weight:600}.nu{color:#A1A1C0;font-size:12px;font-weight:600}.nt{color:#6E6E8F;font-size:12px}</style>"
+			RETURN
+			    IF (
+			        NOT ISBLANK ( [Faturamento] ),
+			        _Css & "<div class='g'>"
+			            & _K & "CLIENTES ATIVOS" & _V & FORMAT ( _c1, "#,0" ) & "</div>" & _d1 & "</div>"
+			            & _K & "FATURAMENTO / CLIENTE" & _V & "R$ " & FORMAT ( _c2, "#,0" ) & "</div>" & _d2 & "</div>"
+			            & _K & "PEDIDOS / CLIENTE" & _V & FORMAT ( _c3, "0.00" ) & "</div>" & _d3 & "</div>"
+			            & _K & "ITENS / PEDIDO" & _V & FORMAT ( _c4, "0.00" ) & "</div>" & _d4 & "</div>"
+			            & _K & "PARCELAS NO CARTÃO" & _V & FORMAT ( _c5, "0.0" ) & "x" & "</div>" & _d5 & "</div>"
+			            & "</div>"
+			    )
+		displayFolder: 06 HTML
+		lineageTag: 1c930c73-2d8b-465d-ac29-647c9f20e211
+
+	/// Segmento do cliente (PF/PJ) e formas de pagamento (tema escuro).
+	measure 'HTML Perfil Clientes' =
+			VAR _Tot = [Faturamento]
+			VAR _PF = CALCULATE ( [Faturamento], D_Clientes[Segmento_Cliente] = "Pessoa Física" )
+			VAR _PJ = CALCULATE ( [Faturamento], D_Clientes[Segmento_Cliente] = "Pessoa Jurídica" )
+			VAR _tPF = CALCULATE ( [Ticket Médio], D_Clientes[Segmento_Cliente] = "Pessoa Física" )
+			VAR _tPJ = CALCULATE ( [Ticket Médio], D_Clientes[Segmento_Cliente] = "Pessoa Jurídica" )
+			VAR _cPF = CALCULATE ( [Clientes Ativos], D_Clientes[Segmento_Cliente] = "Pessoa Física" )
+			VAR _cPJ = CALCULATE ( [Clientes Ativos], D_Clientes[Segmento_Cliente] = "Pessoa Jurídica" )
+			VAR _Pg = ADDCOLUMNS ( FILTER ( VALUES ( D_Forma_Pagamento[Forma_Pagamento] ), NOT ISBLANK ( [Faturamento] ) ), "@f", [Faturamento] )
+			VAR _MaxPg = MAXX ( _Pg, [@f] )
+			VAR _Rows =
+			    CONCATENATEX (
+			        _Pg,
+			        VAR _cr = D_Forma_Pagamento[Forma_Pagamento] = "Cartão de Crédito"
+			        RETURN
+			            "<div class='r'><span class='pn'>" & D_Forma_Pagamento[Forma_Pagamento]
+			                & IF ( _cr, " <span class='x'>" & FORMAT ( [Média de Parcelas], "0.0" ) & "x</span>", "" )
+			                & "</span><div class='bw'><div class='b' style='width:" & FORMAT ( ROUND ( DIVIDE ( [@f], _MaxPg ) * 100, 0 ), "0" )
+			                & "%'></div></div><span class='pc'>" & FORMAT ( DIVIDE ( [@f], _Tot ), "0.0%" ) & "</span></div>",
+			        "",
+			        [@f], DESC
+			    )
+			VAR _Tile = "<div class='t'><div class='tl'>"
+			VAR _Css = "<style>html,body{margin:0;background:transparent;overflow:hidden}::-webkit-scrollbar{display:none}.w{box-sizing:border-box;width:100%;height:292px;padding:16px 22px;font-family:'Segoe UI',sans-serif;color:#fff}.h{font-size:15px;font-weight:600}.s{font-size:12px;color:#8E8EB0;margin:2px 0 10px}.ts{display:flex;gap:10px}.t{flex:1;padding:10px 14px;border-radius:16px;background:linear-gradient(160deg,rgba(94,92,230,.28),rgba(100,210,255,.08));border:1px solid rgba(100,210,255,.18)}.t+.t{background:linear-gradient(160deg,rgba(191,90,242,.25),rgba(94,92,230,.08));border-color:rgba(191,90,242,.22)}.tl{font-size:10px;letter-spacing:.14em;color:#A1A1C0}.tv{font-size:22px;font-weight:700;margin-top:2px}.td{font-size:11px;color:#A1A1C0}.sec{font-size:10px;letter-spacing:.14em;color:#6E6E8F;margin:12px 0 2px}.r{display:flex;align-items:center;gap:10px;height:24px}.pn{font-size:12px;color:#E5E5F0;width:150px;white-space:nowrap}.x{font-size:10px;color:#64D2FF;margin-left:4px}.bw{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}.b{height:6px;border-radius:3px;background:linear-gradient(90deg,#BF5AF2,#64D2FF)}.pc{font-size:12px;font-weight:600;width:48px;text-align:right}</style>"
+			RETURN
+			    IF (
+			        NOT ISBLANK ( _Tot ),
+			        _Css & "<div class='w'><div class='h'>Quem compra e como paga</div><div class='s'>Segmento do cliente e forma de pagamento</div><div class='ts'>"
+			            & _Tile & "PESSOA FÍSICA</div><div class='tv'>" & FORMAT ( DIVIDE ( _PF, _Tot ), "0%" ) & "</div><div class='td'>" & FORMAT ( _cPF, "#,0" ) & " clientes · ticket R$ " & FORMAT ( _tPF, "#,0" ) & "</div></div>"
+			            & _Tile & "PESSOA JURÍDICA</div><div class='tv'>" & FORMAT ( DIVIDE ( _PJ, _Tot ), "0%" ) & "</div><div class='td'>" & FORMAT ( _cPJ, "#,0" ) & " clientes · ticket R$ " & FORMAT ( _tPJ, "#,0" ) & "</div></div>"
+			            & "</div><div class='sec'>FORMA DE PAGAMENTO · % DO FATURAMENTO</div>" & _Rows & "</div>"
+			    )
+		displayFolder: 06 HTML
+		lineageTag: c05b5cd4-b8d9-41c2-8648-6c77b76dd481
+
+	/// Faixa de 5 KPIs da página Operação (tema escuro).
+	measure 'HTML KPI Operacao' =
+			VAR _Comp = HASONEVALUE ( D_Calendario[Ano] ) && NOT ISBLANK ( [Faturamento AA] )
+			VAR _c1 = [Prazo Médio de Entrega (dias)]
+			VAR _p1 = CALCULATE ( [Prazo Médio de Entrega (dias)], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) )
+			VAR _x1 = _c1 - _p1
+			VAR _d1 = IF ( _Comp && NOT ISBLANK ( _p1 ), "<span class='" & IF ( _x1 <= 0, "up", "dn" ) & "'>" & IF ( _x1 >= 0, "&#9650; ", "&#9660; " ) & FORMAT ( ABS ( _x1 ), "0.0" ) & " dia</span>", "<span class='nt'>no período</span>" )
+			VAR _c2 = [Nota Média]
+			VAR _p2 = CALCULATE ( [Nota Média], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) )
+			VAR _x2 = _c2 - _p2
+			VAR _d2 = IF ( _Comp && NOT ISBLANK ( _p2 ), "<span class='" & IF ( _x2 >= 0, "up", "dn" ) & "'>" & IF ( _x2 >= 0, "&#9650; ", "&#9660; " ) & FORMAT ( ABS ( _x2 ), "0.00" ) & "</span>", "<span class='nt'>no período</span>" )
+			VAR _c3 = [% Avaliações Positivas]
+			VAR _p3 = CALCULATE ( [% Avaliações Positivas], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) )
+			VAR _x3 = ( _c3 - _p3 ) * 100
+			VAR _d3 = IF ( _Comp && NOT ISBLANK ( _p3 ), "<span class='" & IF ( _x3 >= 0, "up", "dn" ) & "'>" & IF ( _x3 >= 0, "&#9650; ", "&#9660; " ) & FORMAT ( ABS ( _x3 ), "0.0" ) & " p.p.</span>", "<span class='nt'>no período</span>" )
+			VAR _c4 = [Taxa de Cancelamento]
+			VAR _p4 = CALCULATE ( [Taxa de Cancelamento], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) )
+			VAR _x4 = ( _c4 - _p4 ) * 100
+			VAR _d4 = IF ( _Comp && NOT ISBLANK ( _p4 ), "<span class='" & IF ( _x4 <= 0, "up", "dn" ) & "'>" & IF ( _x4 >= 0, "&#9650; ", "&#9660; " ) & FORMAT ( ABS ( _x4 ), "0.0" ) & " p.p.</span>", "<span class='nt'>no período</span>" )
+			VAR _c5 = [Taxa de Devolução]
+			VAR _p5 = CALCULATE ( [Taxa de Devolução], SAMEPERIODLASTYEAR ( D_Calendario[Data] ) )
+			VAR _x5 = ( _c5 - _p5 ) * 100
+			VAR _d5 = IF ( _Comp && NOT ISBLANK ( _p5 ), "<span class='" & IF ( _x5 <= 0, "up", "dn" ) & "'>" & IF ( _x5 >= 0, "&#9650; ", "&#9660; " ) & FORMAT ( ABS ( _x5 ), "0.0" ) & " p.p.</span>", "<span class='nt'>no período</span>" )
+			VAR _K = "<div class='c'><div class='l'>"
+			VAR _V = "</div><div class='v'>"
+			VAR _Css = "<style>html,body{margin:0;background:transparent;overflow:hidden}::-webkit-scrollbar{display:none}.g{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:1036px;height:88px;font-family:'Segoe UI',sans-serif;color:#fff}.c{box-sizing:border-box;height:84px;padding:12px 18px;border-radius:20px;background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.10);transition:transform .25s ease}.c:hover{transform:translateY(-2px);border-color:rgba(100,210,255,.35)}.l{font-size:11px;letter-spacing:.14em;color:#8E8EB0}.v{font-size:22px;font-weight:600;line-height:1.2;margin-top:4px}.up{color:#30D158;font-size:12px;font-weight:600}.dn{color:#FF453A;font-size:12px;font-weight:600}.nu{color:#A1A1C0;font-size:12px;font-weight:600}.nt{color:#6E6E8F;font-size:12px}</style>"
+			RETURN
+			    IF (
+			        NOT ISBLANK ( [Faturamento] ),
+			        _Css & "<div class='g'>"
+			            & _K & "PRAZO DE ENTREGA" & _V & FORMAT ( _c1, "0.0" ) & " dias" & "</div>" & _d1 & "</div>"
+			            & _K & "NOTA MÉDIA" & _V & FORMAT ( _c2, "0.00" ) & " <span style='font-size:14px;color:#FFD60A'>&#9733;</span>" & "</div>" & _d2 & "</div>"
+			            & _K & "AVALIAÇÕES 4–5" & _V & FORMAT ( _c3, "0.0%" ) & "</div>" & _d3 & "</div>"
+			            & _K & "CANCELAMENTO" & _V & FORMAT ( _c4, "0.0%" ) & "</div>" & _d4 & "</div>"
+			            & _K & "DEVOLUÇÃO" & _V & FORMAT ( _c5, "0.0%" ) & "</div>" & _d5 & "</div>"
+			            & "</div>"
+			    )
+		displayFolder: 06 HTML
+		lineageTag: 9a37d15a-a433-41a4-8e8d-6812697bd3a3
+
+	/// Status final dos pedidos: entregue, devolvido, cancelado (tema escuro).
+	measure 'HTML Status Pedidos' =
+			VAR _Tot = [Pedidos Totais]
+			VAR _E = CALCULATE ( [Pedidos Totais], D_Status_Pedido[Status_Pedido] = "Entregue" )
+			VAR _D = CALCULATE ( [Pedidos Totais], D_Status_Pedido[Status_Pedido] = "Devolvido" )
+			VAR _C = CALCULATE ( [Pedidos Totais], D_Status_Pedido[Status_Pedido] = "Cancelado" )
+			VAR _Row = "<div class='r'><span class='dot' style='background:"
+			VAR _Css = "<style>html,body{margin:0;background:transparent;overflow:hidden}::-webkit-scrollbar{display:none}.w{box-sizing:border-box;width:100%;height:288px;padding:16px 22px;font-family:'Segoe UI',sans-serif;color:#fff}.h{font-size:15px;font-weight:600}.s{font-size:12px;color:#8E8EB0;margin-top:2px}.big{display:flex;align-items:baseline;gap:8px;margin:14px 0 6px}.bn{font-size:44px;font-weight:700;letter-spacing:-.02em;background:linear-gradient(90deg,#30D158,#64D2FF);-webkit-background-clip:text;color:transparent}.bl{font-size:12px;color:#A1A1C0}.st{display:flex;height:10px;border-radius:5px;overflow:hidden;gap:2px;margin:6px 0 14px}.r{display:flex;align-items:center;gap:10px;height:28px;border-top:1px solid rgba(255,255,255,.06)}.dot{width:8px;height:8px;border-radius:4px}.nm{flex:1;font-size:12.5px;color:#E5E5F0}.q{font-size:12px;color:#8E8EB0;width:70px;text-align:right}.pc{font-size:12.5px;font-weight:600;width:50px;text-align:right}</style>"
+			RETURN
+			    IF (
+			        NOT ISBLANK ( _Tot ),
+			        _Css & "<div class='w'><div class='h'>Como terminam os pedidos</div><div class='s'>" & FORMAT ( _Tot, "#,0" ) & " pedidos no período</div>"
+			            & "<div class='big'><span class='bn'>" & FORMAT ( DIVIDE ( _E, _Tot ), "0.0%" ) & "</span><span class='bl'>chegaram ao cliente</span></div>"
+			            & "<div class='st'><div style='flex:" & FORMAT ( _E + 0, "0" ) & ";background:#30D158'></div><div style='flex:" & FORMAT ( _D + 0, "0" ) & ";background:#FFD60A'></div><div style='flex:" & FORMAT ( _C + 0, "0" ) & ";background:#FF453A'></div></div>"
+			            & _Row & "#30D158'></span><span class='nm'>Entregue</span><span class='q'>" & FORMAT ( _E + 0, "#,0" ) & "</span><span class='pc'>" & FORMAT ( DIVIDE ( _E, _Tot ), "0.0%" ) & "</span></div>"
+			            & _Row & "#FFD60A'></span><span class='nm'>Devolvido</span><span class='q'>" & FORMAT ( _D + 0, "#,0" ) & "</span><span class='pc'>" & FORMAT ( DIVIDE ( _D, _Tot ), "0.0%" ) & "</span></div>"
+			            & _Row & "#FF453A'></span><span class='nm'>Cancelado</span><span class='q'>" & FORMAT ( _C + 0, "#,0" ) & "</span><span class='pc'>" & FORMAT ( DIVIDE ( _C, _Tot ), "0.0%" ) & "</span></div>"
+			            & "</div>"
+			    )
+		displayFolder: 06 HTML
+		lineageTag: 3209aab5-5f96-477d-8f0f-b263c985878d
+
+	column Coluna
+		isHidden
+		lineageTag: c6ede29d-89c2-4909-944b-a50e2f4530ce
+		isNameInferred
+		sourceColumn: [Coluna]
+
+	partition _Medidas = calculated
+		mode: import
+		source = ROW("Coluna", BLANK())
+

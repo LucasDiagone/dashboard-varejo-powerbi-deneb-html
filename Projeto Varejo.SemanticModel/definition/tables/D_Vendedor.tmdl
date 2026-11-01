@@ -1,0 +1,34 @@
+table D_Vendedor
+	lineageTag: 9ce16afc-cc48-4c43-9e8a-b5a4b10984b3
+
+	column ID_Vendedor
+		dataType: string
+		lineageTag: c7efd461-5b2a-4a5a-a98c-a38fefd91cb3
+		summarizeBy: none
+		sourceColumn: ID_Vendedor
+
+		annotation SummarizationSetBy = Automatic
+
+	column Nome_Vendedor
+		dataType: string
+		lineageTag: a1ff83fd-8bde-4f57-a691-229ffc0856c1
+		summarizeBy: none
+		sourceColumn: Nome_Vendedor
+
+		annotation SummarizationSetBy = Automatic
+
+	partition D_Vendedor = m
+		mode: import
+		queryGroup: Dimensão
+		source =
+				let
+				    Fonte = Base_Vendas,
+				    #"Outras Colunas Removidas" = Table.SelectColumns(Fonte,{"ID_Vendedor", "Nome_Vendedor"}),
+				    #"Duplicatas Removidas" = Table.Distinct(#"Outras Colunas Removidas", {"ID_Vendedor"})
+				in
+				    #"Duplicatas Removidas"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

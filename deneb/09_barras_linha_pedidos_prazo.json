@@ -1,0 +1,211 @@
+{
+  "campos_no_power_bi": [
+    "Início do Mês",
+    "Pedidos",
+    "Prazo Médio de Entrega (dias)"
+  ],
+  "spec": {
+    "data": {
+      "name": "dataset"
+    },
+    "width": "container",
+    "height": "container",
+    "title": {
+      "text": "Pedidos e prazo de entrega por mês",
+      "subtitle": "Barras = pedidos · linha = prazo médio de entrega (dias)"
+    },
+    "transform": [
+      {
+        "filter": "datum['Pedidos'] > 0"
+      },
+      {
+        "calculate": "['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'][month(datum['Início do Mês'])] + '/' + substring(toString(year(datum['Início do Mês'])), 2)",
+        "as": "mes_txt"
+      },
+      {
+        "calculate": "replace(format(datum['Prazo Médio de Entrega (dias)'], '.1f'), '.', ',') + ' dias'",
+        "as": "pz_txt"
+      }
+    ],
+    "encoding": {
+      "x": {
+        "field": "Início do Mês",
+        "type": "temporal",
+        "timeUnit": "yearmonth",
+        "bandPosition": 0.5,
+        "axis": {
+          "title": null,
+          "tickCount": "month",
+          "labelOverlap": true,
+          "labelExpr": "['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'][month(datum.value)] + (month(datum.value) == 0 ? ' ' + year(datum.value) : '')"
+        }
+      }
+    },
+    "layer": [
+      {
+        "params": [
+          {
+            "name": "hm",
+            "select": {
+              "type": "point",
+              "encodings": [
+                "x"
+              ],
+              "on": "pointerover",
+              "clear": "pointerout"
+            }
+          }
+        ],
+        "mark": {
+          "type": "bar",
+          "cornerRadiusEnd": 4,
+          "width": {
+            "band": 0.62
+          },
+          "color": {
+            "x1": 1,
+            "y1": 1,
+            "x2": 1,
+            "y2": 0,
+            "gradient": "linear",
+            "stops": [
+              {
+                "offset": 0,
+                "color": "rgba(94,92,230,0.25)"
+              },
+              {
+                "offset": 1,
+                "color": "rgba(94,92,230,0.85)"
+              }
+            ]
+          }
+        },
+        "encoding": {
+          "y": {
+            "field": "Pedidos",
+            "type": "quantitative",
+            "axis": {
+              "title": null,
+              "tickCount": 4,
+              "format": ",.0f",
+              "labelExpr": "replace(datum.label, ',', '.')"
+            }
+          },
+          "opacity": {
+            "condition": {
+              "param": "hm",
+              "empty": true,
+              "value": 1
+            },
+            "value": 0.5
+          },
+          "tooltip": [
+            {
+              "field": "mes_txt",
+              "title": "Mês"
+            },
+            {
+              "field": "Pedidos",
+              "format": ",.0f"
+            },
+            {
+              "field": "pz_txt",
+              "title": "Prazo médio"
+            }
+          ]
+        }
+      },
+      {
+        "mark": {
+          "type": "line",
+          "interpolate": "monotone",
+          "strokeWidth": 3,
+          "color": "#64D2FF",
+          "point": {
+            "filled": true,
+            "size": 26,
+            "color": "#64D2FF"
+          }
+        },
+        "encoding": {
+          "y": {
+            "field": "Prazo Médio de Entrega (dias)",
+            "type": "quantitative",
+            "scale": {
+              "zero": false,
+              "padding": 12
+            },
+            "axis": {
+              "orient": "right",
+              "title": null,
+              "grid": false,
+              "tickCount": 4,
+              "labelColor": "#64D2FF",
+              "labelExpr": "replace(format(datum.value, '.1f'), '.', ',') + ' d'"
+            }
+          }
+        }
+      }
+    ],
+    "resolve": {
+      "scale": {
+        "y": "independent"
+      }
+    }
+  },
+  "config": {
+    "autosize": {
+      "type": "fit",
+      "contains": "padding"
+    },
+    "padding": {
+      "left": 16,
+      "right": 20,
+      "top": 14,
+      "bottom": 10
+    },
+    "background": "transparent",
+    "font": "Segoe UI",
+    "view": {
+      "stroke": null
+    },
+    "axis": {
+      "domain": false,
+      "ticks": false,
+      "grid": false,
+      "labelColor": "#8E8EB0",
+      "labelFontSize": 10.5,
+      "labelPadding": 8,
+      "titleColor": "#6E6E8F",
+      "titleFontSize": 10,
+      "titleFontWeight": "normal"
+    },
+    "axisY": {
+      "grid": true,
+      "gridColor": "#FFFFFF",
+      "gridOpacity": 0.06
+    },
+    "legend": {
+      "labelColor": "#C7C7DD",
+      "labelFontSize": 11,
+      "titleColor": "#8E8EB0",
+      "symbolType": "circle",
+      "symbolSize": 90
+    },
+    "title": {
+      "anchor": "start",
+      "font": "Segoe UI Semibold",
+      "fontSize": 15,
+      "color": "#FFFFFF",
+      "subtitleColor": "#8E8EB0",
+      "subtitleFontSize": 12,
+      "offset": 16,
+      "subtitlePadding": 4
+    },
+    "text": {
+      "font": "Segoe UI",
+      "color": "#FFFFFF"
+    },
+    "tooltip": {}
+  }
+}

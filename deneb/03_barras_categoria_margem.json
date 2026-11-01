@@ -1,0 +1,245 @@
+{
+  "campos_no_power_bi": [
+    "Categoria",
+    "Faturamento",
+    "Margem Bruta %",
+    "Var. % Faturamento AA"
+  ],
+  "spec": {
+    "data": {
+      "name": "dataset"
+    },
+    "width": "container",
+    "height": "container",
+    "title": {
+      "text": "Faturamento por categoria",
+      "subtitle": "Barra = faturamento · à direita, a margem bruta (%)"
+    },
+    "transform": [
+      {
+        "calculate": "replace(format(datum['Margem Bruta %'], '.1%'), '.', ',')",
+        "as": "mg_txt"
+      },
+      {
+        "calculate": "isValid(datum['Var. % Faturamento AA']) ? replace(format(datum['Var. % Faturamento AA'], '.1%'), '.', ',') : '—'",
+        "as": "var_txt"
+      },
+      {
+        "calculate": "datum['Faturamento'] >= 1000000 ? 'R$ ' + replace(format(datum['Faturamento'] / 1000000, '.2f'), '.', ',') + ' mi' : 'R$ ' + replace(format(datum['Faturamento'] / 1000, ',.0f'), ',', '.') + ' mil'",
+        "as": "val_txt"
+      },
+      {
+        "joinaggregate": [
+          {
+            "op": "max",
+            "field": "Faturamento",
+            "as": "vmax"
+          }
+        ]
+      },
+      {
+        "calculate": "datum.vmax * 1.75",
+        "as": "xend"
+      }
+    ],
+    "encoding": {
+      "y": {
+        "field": "Categoria",
+        "type": "nominal",
+        "sort": {
+          "field": "Faturamento",
+          "op": "max",
+          "order": "descending"
+        },
+        "axis": {
+          "title": null,
+          "labelLimit": 150
+        }
+      }
+    },
+    "layer": [
+      {
+        "params": [
+          {
+            "name": "hov",
+            "select": {
+              "type": "point",
+              "fields": [
+                "Categoria"
+              ],
+              "on": "pointerover",
+              "clear": "pointerout"
+            }
+          }
+        ],
+        "mark": {
+          "type": "bar",
+          "cornerRadiusEnd": 6,
+          "height": {
+            "band": 0.55
+          },
+          "color": {
+            "x1": 0,
+            "y1": 0,
+            "x2": 1,
+            "y2": 0,
+            "gradient": "linear",
+            "stops": [
+              {
+                "offset": 0,
+                "color": "#5E5CE6"
+              },
+              {
+                "offset": 1,
+                "color": "#64D2FF"
+              }
+            ]
+          }
+        },
+        "encoding": {
+          "x": {
+            "field": "Faturamento",
+            "type": "quantitative",
+            "axis": null,
+            "scale": {
+              "nice": false
+            }
+          },
+          "opacity": {
+            "condition": {
+              "param": "hov",
+              "empty": true,
+              "value": 1
+            },
+            "value": 0.45
+          },
+          "tooltip": [
+            {
+              "field": "Categoria",
+              "title": "Categoria"
+            },
+            {
+              "field": "val_txt",
+              "title": "Faturamento"
+            },
+            {
+              "field": "mg_txt",
+              "title": "Margem bruta"
+            },
+            {
+              "field": "var_txt",
+              "title": "Vs. ano anterior"
+            }
+          ]
+        }
+      },
+      {
+        "mark": {
+          "type": "text",
+          "text": ""
+        },
+        "encoding": {
+          "x": {
+            "field": "xend",
+            "type": "quantitative"
+          }
+        }
+      },
+      {
+        "mark": {
+          "type": "text",
+          "align": "left",
+          "dx": 8,
+          "fontSize": 12,
+          "fontWeight": 600
+        },
+        "encoding": {
+          "x": {
+            "field": "Faturamento",
+            "type": "quantitative"
+          },
+          "text": {
+            "field": "val_txt"
+          }
+        }
+      },
+      {
+        "mark": {
+          "type": "text",
+          "align": "right",
+          "fontSize": 11.5,
+          "fontWeight": 600
+        },
+        "encoding": {
+          "x": {
+            "field": "xend",
+            "type": "quantitative"
+          },
+          "text": {
+            "field": "mg_txt"
+          },
+          "color": {
+            "value": "#BF5AF2"
+          }
+        }
+      }
+    ]
+  },
+  "config": {
+    "autosize": {
+      "type": "fit",
+      "contains": "padding"
+    },
+    "padding": {
+      "left": 16,
+      "right": 20,
+      "top": 14,
+      "bottom": 10
+    },
+    "background": "transparent",
+    "font": "Segoe UI",
+    "view": {
+      "stroke": null
+    },
+    "axis": {
+      "domain": false,
+      "ticks": false,
+      "grid": false,
+      "labelColor": "#8E8EB0",
+      "labelFontSize": 10.5,
+      "labelPadding": 8,
+      "titleColor": "#6E6E8F",
+      "titleFontSize": 10,
+      "titleFontWeight": "normal"
+    },
+    "axisY": {
+      "grid": false,
+      "labelColor": "#E5E5F0",
+      "labelFontSize": 11.5,
+      "labelPadding": 10,
+      "labelLimit": 220
+    },
+    "legend": {
+      "labelColor": "#C7C7DD",
+      "labelFontSize": 11,
+      "titleColor": "#8E8EB0",
+      "symbolType": "circle",
+      "symbolSize": 90
+    },
+    "title": {
+      "anchor": "start",
+      "font": "Segoe UI Semibold",
+      "fontSize": 15,
+      "color": "#FFFFFF",
+      "subtitleColor": "#8E8EB0",
+      "subtitleFontSize": 12,
+      "offset": 16,
+      "subtitlePadding": 4
+    },
+    "text": {
+      "font": "Segoe UI",
+      "color": "#FFFFFF"
+    },
+    "tooltip": {}
+  }
+}

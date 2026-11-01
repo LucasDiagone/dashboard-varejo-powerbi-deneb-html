@@ -1,0 +1,333 @@
+{
+  "campos_no_power_bi": [
+    "Início do Mês",
+    "Faturamento",
+    "Faturamento AA"
+  ],
+  "spec": {
+    "data": {
+      "name": "dataset"
+    },
+    "width": "container",
+    "height": "container",
+    "title": {
+      "text": "Black Friday e Natal puxam o ano",
+      "subtitle": "Faturamento mês a mês · tracejado = ano anterior"
+    },
+    "transform": [
+      {
+        "calculate": "['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'][month(datum['Início do Mês'])] + '/' + substring(toString(year(datum['Início do Mês'])), 2)",
+        "as": "mes_txt"
+      },
+      {
+        "calculate": "'R$ ' + replace(format(datum['Faturamento'] / 1000000, '.2f'), '.', ',') + ' mi'",
+        "as": "fat_txt"
+      },
+      {
+        "calculate": "isValid(datum['Faturamento AA']) ? 'R$ ' + replace(format(datum['Faturamento AA'] / 1000000, '.2f'), '.', ',') + ' mi' : '—'",
+        "as": "aa_txt"
+      },
+      {
+        "calculate": "isValid(datum['Faturamento AA']) && datum['Faturamento AA'] > 0 ? replace(format(datum['Faturamento'] / datum['Faturamento AA'] - 1, '+.1%'), '.', ',') : '—'",
+        "as": "var_txt"
+      },
+      {
+        "calculate": "datum.mes_txt + ' · ' + datum.fat_txt",
+        "as": "anot"
+      }
+    ],
+    "encoding": {
+      "x": {
+        "field": "Início do Mês",
+        "type": "temporal",
+        "axis": {
+          "title": null,
+          "tickCount": "month",
+          "labelOverlap": true,
+          "labelExpr": "['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'][month(datum.value)] + (month(datum.value) == 0 ? ' ' + year(datum.value) : '')"
+        }
+      }
+    },
+    "layer": [
+      {
+        "mark": {
+          "type": "area",
+          "interpolate": "monotone",
+          "color": {
+            "x1": 1,
+            "y1": 1,
+            "x2": 1,
+            "y2": 0,
+            "gradient": "linear",
+            "stops": [
+              {
+                "offset": 0,
+                "color": "rgba(94,92,230,0)"
+              },
+              {
+                "offset": 1,
+                "color": "rgba(94,92,230,0.45)"
+              }
+            ]
+          }
+        },
+        "encoding": {
+          "y": {
+            "field": "Faturamento",
+            "type": "quantitative",
+            "axis": {
+              "title": null,
+              "tickCount": 4,
+              "labelExpr": "replace(format(datum.value / 1000000, '.1f'), '.', ',') + ' mi'"
+            }
+          }
+        }
+      },
+      {
+        "transform": [
+          {
+            "filter": "isValid(datum['Faturamento AA'])"
+          }
+        ],
+        "mark": {
+          "type": "line",
+          "interpolate": "monotone",
+          "strokeWidth": 2,
+          "strokeDash": [
+            5,
+            5
+          ],
+          "color": "#4A4A6A"
+        },
+        "encoding": {
+          "y": {
+            "field": "Faturamento AA",
+            "type": "quantitative"
+          }
+        }
+      },
+      {
+        "mark": {
+          "type": "line",
+          "interpolate": "monotone",
+          "strokeWidth": 3.5,
+          "strokeCap": "round",
+          "color": {
+            "x1": 0,
+            "y1": 0,
+            "x2": 1,
+            "y2": 0,
+            "gradient": "linear",
+            "stops": [
+              {
+                "offset": 0,
+                "color": "#64D2FF"
+              },
+              {
+                "offset": 1,
+                "color": "#BF5AF2"
+              }
+            ]
+          }
+        },
+        "encoding": {
+          "y": {
+            "field": "Faturamento",
+            "type": "quantitative"
+          }
+        }
+      },
+      {
+        "transform": [
+          {
+            "filter": {
+              "param": "hover",
+              "empty": false
+            }
+          }
+        ],
+        "mark": {
+          "type": "rule",
+          "color": "#8E8EB0",
+          "strokeDash": [
+            2,
+            3
+          ],
+          "opacity": 0.6
+        }
+      },
+      {
+        "params": [
+          {
+            "name": "hover",
+            "select": {
+              "type": "point",
+              "encodings": [
+                "x"
+              ],
+              "nearest": true,
+              "on": "pointerover",
+              "clear": "pointerout"
+            }
+          }
+        ],
+        "mark": {
+          "type": "point",
+          "opacity": 0,
+          "size": 500
+        },
+        "encoding": {
+          "y": {
+            "field": "Faturamento",
+            "type": "quantitative"
+          },
+          "tooltip": [
+            {
+              "field": "mes_txt",
+              "title": "Mês"
+            },
+            {
+              "field": "fat_txt",
+              "title": "Faturamento"
+            },
+            {
+              "field": "aa_txt",
+              "title": "Ano anterior"
+            },
+            {
+              "field": "var_txt",
+              "title": "Variação"
+            }
+          ]
+        }
+      },
+      {
+        "transform": [
+          {
+            "filter": {
+              "param": "hover",
+              "empty": false
+            }
+          }
+        ],
+        "mark": {
+          "type": "point",
+          "filled": true,
+          "size": 90,
+          "color": "#06071A",
+          "stroke": "#64D2FF",
+          "strokeWidth": 3
+        },
+        "encoding": {
+          "y": {
+            "field": "Faturamento",
+            "type": "quantitative"
+          }
+        }
+      },
+      {
+        "transform": [
+          {
+            "window": [
+              {
+                "op": "rank",
+                "as": "pos"
+              }
+            ],
+            "sort": [
+              {
+                "field": "Faturamento",
+                "order": "descending"
+              }
+            ]
+          },
+          {
+            "filter": "datum.pos == 1"
+          }
+        ],
+        "layer": [
+          {
+            "mark": {
+              "type": "point",
+              "filled": true,
+              "size": 110,
+              "color": "#FFFFFF",
+              "stroke": "#BF5AF2",
+              "strokeWidth": 3
+            },
+            "encoding": {
+              "y": {
+                "field": "Faturamento",
+                "type": "quantitative"
+              }
+            }
+          },
+          {
+            "mark": {
+              "type": "text",
+              "align": "right",
+              "dx": -12,
+              "dy": -2,
+              "fontSize": 12,
+              "fontWeight": 600,
+              "color": "#FFFFFF"
+            },
+            "encoding": {
+              "y": {
+                "field": "Faturamento",
+                "type": "quantitative"
+              },
+              "text": {
+                "field": "anot"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "config": {
+    "autosize": {
+      "type": "fit",
+      "contains": "padding"
+    },
+    "padding": {
+      "left": 14,
+      "right": 18,
+      "top": 10,
+      "bottom": 8
+    },
+    "background": "transparent",
+    "font": "Segoe UI",
+    "view": {
+      "stroke": null
+    },
+    "axis": {
+      "domain": false,
+      "ticks": false,
+      "grid": false,
+      "labelColor": "#6E6E8F",
+      "labelFontSize": 10,
+      "labelPadding": 6
+    },
+    "axisY": {
+      "grid": true,
+      "gridColor": "#FFFFFF",
+      "gridOpacity": 0.06
+    },
+    "title": {
+      "anchor": "start",
+      "font": "Segoe UI Semibold",
+      "fontSize": 15,
+      "color": "#FFFFFF",
+      "subtitleColor": "#8E8EB0",
+      "subtitleFontSize": 12,
+      "offset": 14,
+      "subtitlePadding": 4
+    },
+    "text": {
+      "font": "Segoe UI",
+      "color": "#FFFFFF"
+    }
+  }
+}

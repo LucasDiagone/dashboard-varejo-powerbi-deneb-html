@@ -1,0 +1,195 @@
+{
+  "campos_no_power_bi": [
+    "Regiao",
+    "Categoria",
+    "Faturamento"
+  ],
+  "spec": {
+    "data": {
+      "name": "dataset"
+    },
+    "width": "container",
+    "height": "container",
+    "title": {
+      "text": "Região × categoria",
+      "subtitle": "Faturamento em R$ mi · quanto mais claro, mais vende"
+    },
+    "transform": [
+      {
+        "filter": "datum['Faturamento'] > 0"
+      },
+      {
+        "joinaggregate": [
+          {
+            "op": "max",
+            "field": "Faturamento",
+            "as": "fmax"
+          }
+        ]
+      },
+      {
+        "calculate": "replace(format(datum['Faturamento'] / 1000000, '.2f'), '.', ',')",
+        "as": "v"
+      },
+      {
+        "calculate": "datum['Faturamento'] >= 1000000 ? 'R$ ' + replace(format(datum['Faturamento'] / 1000000, '.2f'), '.', ',') + ' mi' : 'R$ ' + replace(format(datum['Faturamento'] / 1000, ',.0f'), ',', '.') + ' mil'",
+        "as": "val_txt"
+      }
+    ],
+    "encoding": {
+      "x": {
+        "field": "Regiao",
+        "type": "nominal",
+        "sort": [
+          "Sudeste",
+          "Sul",
+          "Nordeste",
+          "Centro-Oeste",
+          "Norte"
+        ],
+        "axis": {
+          "title": null
+        },
+        "scale": {
+          "paddingInner": 0.08
+        }
+      },
+      "y": {
+        "field": "Categoria",
+        "type": "nominal",
+        "sort": {
+          "field": "Faturamento",
+          "op": "sum",
+          "order": "descending"
+        },
+        "axis": {
+          "title": null,
+          "labelLimit": 130
+        },
+        "scale": {
+          "paddingInner": 0.1
+        }
+      }
+    },
+    "layer": [
+      {
+        "mark": {
+          "type": "rect",
+          "cornerRadius": 7
+        },
+        "encoding": {
+          "color": {
+            "field": "Faturamento",
+            "type": "quantitative",
+            "scale": {
+              "type": "sqrt",
+              "range": [
+                "#16183A",
+                "#3B3A9E",
+                "#5E5CE6",
+                "#64D2FF"
+              ]
+            },
+            "legend": null
+          },
+          "tooltip": [
+            {
+              "field": "Regiao",
+              "title": "Região"
+            },
+            {
+              "field": "Categoria"
+            },
+            {
+              "field": "val_txt",
+              "title": "Faturamento"
+            }
+          ]
+        }
+      },
+      {
+        "mark": {
+          "type": "text",
+          "fontSize": 11,
+          "fontWeight": 600
+        },
+        "encoding": {
+          "text": {
+            "field": "v"
+          },
+          "color": {
+            "condition": {
+              "test": "datum['Faturamento'] > datum.fmax * 0.42",
+              "value": "#06071A"
+            },
+            "value": "#E5E5F0"
+          }
+        }
+      }
+    ]
+  },
+  "config": {
+    "autosize": {
+      "type": "fit",
+      "contains": "padding"
+    },
+    "padding": {
+      "left": 16,
+      "right": 20,
+      "top": 14,
+      "bottom": 10
+    },
+    "background": "transparent",
+    "font": "Segoe UI",
+    "view": {
+      "stroke": null
+    },
+    "axis": {
+      "domain": false,
+      "ticks": false,
+      "grid": false,
+      "labelColor": "#8E8EB0",
+      "labelFontSize": 10.5,
+      "labelPadding": 8,
+      "titleColor": "#6E6E8F",
+      "titleFontSize": 10,
+      "titleFontWeight": "normal"
+    },
+    "axisY": {
+      "grid": false,
+      "labelColor": "#E5E5F0",
+      "labelFontSize": 11.5,
+      "labelPadding": 10,
+      "labelLimit": 220
+    },
+    "legend": {
+      "labelColor": "#C7C7DD",
+      "labelFontSize": 11,
+      "titleColor": "#8E8EB0",
+      "symbolType": "circle",
+      "symbolSize": 90
+    },
+    "title": {
+      "anchor": "start",
+      "font": "Segoe UI Semibold",
+      "fontSize": 15,
+      "color": "#FFFFFF",
+      "subtitleColor": "#8E8EB0",
+      "subtitleFontSize": 12,
+      "offset": 16,
+      "subtitlePadding": 4
+    },
+    "text": {
+      "font": "Segoe UI",
+      "color": "#FFFFFF"
+    },
+    "tooltip": {},
+    "axisX": {
+      "labelColor": "#C7C7DD",
+      "labelFontSize": 11,
+      "orient": "top",
+      "labelPadding": 6,
+      "labelAngle": 0
+    }
+  }
+}

@@ -1,0 +1,236 @@
+table F_Vendas
+	lineageTag: 05393077-4bf6-4611-8a0d-50e0fa99c4de
+
+	column ID_Pedido
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: a4505537-62cf-4207-ad91-1e151b941ed4
+		summarizeBy: none
+		sourceColumn: ID_Pedido
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column Item_Pedido
+		dataType: int64
+		formatString: 0
+		lineageTag: cf8cc4e8-8c2d-483c-a316-c35ee5835ddb
+		summarizeBy: none
+		sourceColumn: Item_Pedido
+
+		annotation SummarizationSetBy = User
+
+	column Data_Pedido
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: 34843d04-376a-40ac-b93d-4e9dc7020009
+		summarizeBy: none
+		sourceColumn: Data_Pedido
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column Data_Envio
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: aa3010b8-9174-4f95-9f99-71cc243e3f6a
+		summarizeBy: none
+		sourceColumn: Data_Envio
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column Data_Entrega
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: 1ed38526-ba75-4bf4-8195-6cb9e3300635
+		summarizeBy: none
+		sourceColumn: Data_Entrega
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column Qtd_Parcelas
+		dataType: int64
+		formatString: 0
+		lineageTag: 0df06384-14ba-40de-b094-397ac1df206c
+		summarizeBy: none
+		sourceColumn: Qtd_Parcelas
+
+		annotation SummarizationSetBy = User
+
+	column Quantidade
+		dataType: int64
+		formatString: #,0
+		lineageTag: c8fdac1d-5332-408f-a9b8-63ec2673526d
+		summarizeBy: sum
+		sourceColumn: Quantidade
+
+		annotation SummarizationSetBy = User
+
+	column Preco_Unitario
+		dataType: double
+		formatString: \R$ #,0.00
+		lineageTag: 0e47d936-bcb1-4a00-8cbc-f799cc0a8bb0
+		summarizeBy: none
+		sourceColumn: Preco_Unitario
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Custo_Unitario
+		dataType: double
+		formatString: \R$ #,0.00
+		lineageTag: 0d18677e-9a48-4701-af4d-76ae36dde204
+		summarizeBy: none
+		sourceColumn: Custo_Unitario
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Desconto_Perc
+		dataType: double
+		formatString: 0%
+		lineageTag: 8ecffdc7-5051-417a-abf0-694092370f02
+		summarizeBy: none
+		sourceColumn: Desconto_Perc
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Valor_Frete
+		dataType: double
+		formatString: \R$ #,0.00
+		lineageTag: fc78349a-37f6-4051-b7ab-fba4b122570d
+		summarizeBy: sum
+		sourceColumn: Valor_Frete
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Nota_Avaliacao
+		dataType: int64
+		formatString: 0
+		lineageTag: 278c6a58-8ba5-4833-bbf6-ae3f927842d6
+		summarizeBy: none
+		sourceColumn: Nota_Avaliacao
+
+		annotation SummarizationSetBy = User
+
+	column ID_Canal_Venda
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 02b8673d-a2c5-43c0-8c6a-97f1cb7d93e4
+		summarizeBy: none
+		sourceColumn: ID_Canal_Venda
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_Forma_Pagamento
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: e7e36c82-a1ac-492b-9ff7-2e7f151c9491
+		summarizeBy: none
+		sourceColumn: ID_Forma_Pagamento
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_Status_Pedido
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 12da2307-f888-4da1-8bdb-7247261a6878
+		summarizeBy: none
+		sourceColumn: ID_Status_Pedido
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_Cliente
+		dataType: string
+		isHidden
+		lineageTag: 91ae005a-1cca-4a13-8f8c-45280071d306
+		summarizeBy: none
+		sourceColumn: ID_Cliente
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_Loja
+		dataType: string
+		isHidden
+		lineageTag: 768249c5-cd3e-4ec0-87c9-9f5a90fa0d30
+		summarizeBy: none
+		sourceColumn: ID_Loja
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_Vendedor
+		dataType: string
+		isHidden
+		lineageTag: 7251ae15-7aa7-453b-8c97-9434cbff94a3
+		summarizeBy: none
+		sourceColumn: ID_Vendedor
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_Produto
+		dataType: string
+		isHidden
+		lineageTag: 4df742cc-033d-4e03-ba26-af096ea8fe08
+		summarizeBy: none
+		sourceColumn: ID_Produto
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition F_Vendas = m
+		mode: import
+		queryGroup: Fato
+		source =
+				let
+				    Fonte = Base_Vendas,
+				    #"Consultas Mescladas" = Table.NestedJoin(Fonte, {"Canal_Venda"}, D_Canal_Venda, {"Canal_Venda"}, "D_Canal_Venda", JoinKind.LeftOuter),
+				    #"D_Canal_Venda Expandido" = Table.ExpandTableColumn(#"Consultas Mescladas", "D_Canal_Venda", {"ID_Canal_Venda"}, {"D_Canal_Venda.ID_Canal_Venda"}),
+				    #"Consultas Mescladas1" = Table.NestedJoin(#"D_Canal_Venda Expandido", {"Forma_Pagamento"}, D_Forma_Pagamento, {"Forma_Pagamento"}, "D_Forna_Pagamento", JoinKind.LeftOuter),
+				    #"D_Forna_Pagamento Expandido" = Table.ExpandTableColumn(#"Consultas Mescladas1", "D_Forna_Pagamento", {"ID_Forma_Pagamento"}, {"D_Forna_Pagamento.ID_Forna_Pagamento"}),
+				    #"Consultas Mescladas2" = Table.NestedJoin(#"D_Forna_Pagamento Expandido", {"Status_Pedido"}, D_Status_Pedido, {"Status_Pedido"}, "D_Status_Pedido", JoinKind.LeftOuter),
+				    #"D_Status_Pedido Expandido" = Table.ExpandTableColumn(#"Consultas Mescladas2", "D_Status_Pedido", {"ID_Status_Pedido"}, {"D_Status_Pedido.ID_Status_Pedido"}),
+				    #"Outras Colunas Removidas" = Table.SelectColumns(#"D_Status_Pedido Expandido",{"ID_Pedido", "Item_Pedido", "Data_Pedido", "Data_Entrega", "Data_Envio", "Qtd_Parcelas", "ID_Cliente", "ID_Loja", "ID_Vendedor", "ID_Produto", "Quantidade", "Preco_Unitario", "Custo_Unitario", "Desconto_Perc", "Valor_Frete", "Nota_Avaliacao", "D_Canal_Venda.ID_Canal_Venda", "D_Forna_Pagamento.ID_Forna_Pagamento", "D_Status_Pedido.ID_Status_Pedido"}),
+				    #"Colunas Reordenadas" = Table.ReorderColumns(#"Outras Colunas Removidas",{"ID_Pedido", "Item_Pedido", "Data_Pedido", "Data_Entrega", "Data_Envio", "Qtd_Parcelas", "Quantidade", "Preco_Unitario", "Custo_Unitario", "Desconto_Perc", "Valor_Frete", "Nota_Avaliacao", "ID_Cliente", "ID_Loja", "ID_Vendedor", "ID_Produto", "D_Canal_Venda.ID_Canal_Venda", "D_Forna_Pagamento.ID_Forna_Pagamento", "D_Status_Pedido.ID_Status_Pedido"}),
+				    #"Colunas Renomeadas" = Table.RenameColumns(#"Colunas Reordenadas",{{"D_Status_Pedido.ID_Status_Pedido", "ID_Status_Pedido"}, {"D_Forna_Pagamento.ID_Forna_Pagamento", "ID_Forma_Pagamento"}, {"D_Canal_Venda.ID_Canal_Venda", "ID_Canal_Venda"}})
+				in
+				    #"Colunas Renomeadas"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

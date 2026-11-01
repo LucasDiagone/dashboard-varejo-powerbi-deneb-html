@@ -1,0 +1,69 @@
+table D_Loja
+	lineageTag: b46079d6-bc80-4931-9799-c47b0889f21e
+
+	column ID_Loja
+		dataType: string
+		lineageTag: 4fe9fdb4-45e3-4a5d-9d91-18bc9f3b534b
+		summarizeBy: none
+		sourceColumn: ID_Loja
+
+		annotation SummarizationSetBy = Automatic
+
+	column Nome_Loja
+		dataType: string
+		lineageTag: 92b08083-dcea-4a67-a791-b493818b6ed7
+		summarizeBy: none
+		sourceColumn: Nome_Loja
+
+		annotation SummarizationSetBy = Automatic
+
+	column Cidade_Loja
+		dataType: string
+		lineageTag: 4635efd7-447a-481d-a569-077c08178411
+		summarizeBy: none
+		sourceColumn: Cidade_Loja
+
+		annotation SummarizationSetBy = Automatic
+
+	column UF_Loja
+		dataType: string
+		lineageTag: 40f6ed24-31d0-4425-9dfe-6a35ea1cde7f
+		summarizeBy: none
+		sourceColumn: UF_Loja
+
+		annotation SummarizationSetBy = Automatic
+
+	column Tipo_Loja
+		dataType: string
+		lineageTag: 9bb33217-4545-4796-90ad-3fc6593ac03a
+		summarizeBy: none
+		sourceColumn: Tipo_Loja
+
+		annotation SummarizationSetBy = Automatic
+
+	column Data_Inauguracao
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: c856f195-277a-401a-9fd2-a3f49dd42ef8
+		summarizeBy: none
+		sourceColumn: Data_Inauguracao
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition D_Loja = m
+		mode: import
+		queryGroup: Dimensão
+		source =
+				let
+				    Fonte = Base_Vendas,
+				    #"Outras Colunas Removidas" = Table.SelectColumns(Fonte,{"ID_Loja", "Nome_Loja", "Cidade_Loja", "UF_Loja", "Tipo_Loja", "Data_Inauguracao"}),
+				    #"Duplicatas Removidas" = Table.Distinct(#"Outras Colunas Removidas", {"ID_Loja"})
+				in
+				    #"Duplicatas Removidas"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

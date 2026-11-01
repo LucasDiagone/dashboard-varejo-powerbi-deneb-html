@@ -1,0 +1,96 @@
+table D_Clientes
+	lineageTag: d9fbe4f0-1cf7-447c-9688-4134b71f1406
+
+	column ID_Cliente
+		dataType: string
+		lineageTag: ab468f69-db99-49b5-bddf-431cd50d8465
+		summarizeBy: none
+		sourceColumn: ID_Cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column Nome_Cliente
+		dataType: string
+		lineageTag: 36cc8c8a-b37c-41e6-be93-9dc2dd676c00
+		summarizeBy: none
+		sourceColumn: Nome_Cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column Sexo
+		dataType: string
+		lineageTag: 947e4219-15ad-4bca-8627-739f4e998102
+		summarizeBy: none
+		sourceColumn: Sexo
+
+		annotation SummarizationSetBy = Automatic
+
+	column Data_Nascimento
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 0a3e546e-b02a-465a-8725-4807445a59f5
+		summarizeBy: none
+		sourceColumn: Data_Nascimento
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Segmento_Cliente
+		dataType: string
+		lineageTag: 961110e4-ce4d-4842-b378-86efe34460ed
+		summarizeBy: none
+		sourceColumn: Segmento_Cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column Data_Cadastro
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 14c2b580-db6c-470e-95f4-2da74bf0ac41
+		summarizeBy: none
+		sourceColumn: Data_Cadastro
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Cidade
+		dataType: string
+		lineageTag: e75ca5cb-3441-4e8e-b88e-8e965d772d2d
+		summarizeBy: none
+		sourceColumn: Cidade
+
+		annotation SummarizationSetBy = Automatic
+
+	column UF
+		dataType: string
+		lineageTag: b58e30cb-3a31-4a4e-b21e-0932a84d6023
+		summarizeBy: none
+		sourceColumn: UF
+
+		annotation SummarizationSetBy = Automatic
+
+	column Regiao
+		dataType: string
+		lineageTag: e37f5d79-5f62-4fed-a66f-1bc253cf188f
+		summarizeBy: none
+		sourceColumn: Regiao
+
+		annotation SummarizationSetBy = Automatic
+
+	partition D_Clientes = m
+		mode: import
+		queryGroup: Dimensão
+		source =
+				let
+				    Fonte = Base_Vendas,
+				    #"Outras Colunas Removidas" = Table.SelectColumns(Fonte,{"ID_Cliente", "Nome_Cliente", "Sexo", "Data_Nascimento", "Segmento_Cliente", "Data_Cadastro", "Cidade", "UF", "Regiao"}),
+				    #"Duplicatas Removidas" = Table.Distinct(#"Outras Colunas Removidas", {"ID_Cliente"})
+				in
+				    #"Duplicatas Removidas"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

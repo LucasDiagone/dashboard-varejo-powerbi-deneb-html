@@ -1,0 +1,167 @@
+{
+  "campos_no_power_bi": [
+    "Dia da Semana",
+    "Dia da Semana Número",
+    "Mês Abrev",
+    "Mês",
+    "Mês Número",
+    "Pedidos"
+  ],
+  "spec": {
+    "data": {
+      "name": "dataset"
+    },
+    "width": "container",
+    "height": "container",
+    "title": {
+      "text": "Quando os pedidos acontecem",
+      "subtitle": "Pedidos por dia da semana e mês"
+    },
+    "transform": [
+      {
+        "filter": "datum['Pedidos'] > 0"
+      },
+      {
+        "calculate": "upper(substring(datum['Dia da Semana'], 0, 1)) + substring(datum['Dia da Semana'], 1, 3)",
+        "as": "dia"
+      },
+      {
+        "calculate": "upper(substring(datum['Mês Abrev'], 0, 1)) + substring(datum['Mês Abrev'], 1, 3)",
+        "as": "mes"
+      },
+      {
+        "calculate": "replace(format(datum['Pedidos'], ',.0f'), ',', '.')",
+        "as": "p_txt"
+      }
+    ],
+    "encoding": {
+      "x": {
+        "field": "mes",
+        "type": "ordinal",
+        "sort": {
+          "field": "Mês Número",
+          "op": "min"
+        },
+        "axis": {
+          "title": null
+        },
+        "scale": {
+          "paddingInner": 0.1
+        }
+      },
+      "y": {
+        "field": "dia",
+        "type": "ordinal",
+        "sort": {
+          "field": "Dia da Semana Número",
+          "op": "min"
+        },
+        "axis": {
+          "title": null
+        },
+        "scale": {
+          "paddingInner": 0.12
+        }
+      }
+    },
+    "layer": [
+      {
+        "mark": {
+          "type": "rect",
+          "cornerRadius": 5
+        },
+        "encoding": {
+          "color": {
+            "field": "Pedidos",
+            "type": "quantitative",
+            "scale": {
+              "range": [
+                "#16183A",
+                "#5E5CE6",
+                "#BF5AF2"
+              ]
+            },
+            "legend": null
+          },
+          "tooltip": [
+            {
+              "field": "Dia da Semana",
+              "title": "Dia"
+            },
+            {
+              "field": "Mês"
+            },
+            {
+              "field": "p_txt",
+              "title": "Pedidos"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "config": {
+    "autosize": {
+      "type": "fit",
+      "contains": "padding"
+    },
+    "padding": {
+      "left": 16,
+      "right": 20,
+      "top": 14,
+      "bottom": 10
+    },
+    "background": "transparent",
+    "font": "Segoe UI",
+    "view": {
+      "stroke": null
+    },
+    "axis": {
+      "domain": false,
+      "ticks": false,
+      "grid": false,
+      "labelColor": "#8E8EB0",
+      "labelFontSize": 10.5,
+      "labelPadding": 8,
+      "titleColor": "#6E6E8F",
+      "titleFontSize": 10,
+      "titleFontWeight": "normal"
+    },
+    "axisY": {
+      "grid": false,
+      "labelColor": "#E5E5F0",
+      "labelFontSize": 11.5,
+      "labelPadding": 10,
+      "labelLimit": 220
+    },
+    "legend": {
+      "labelColor": "#C7C7DD",
+      "labelFontSize": 11,
+      "titleColor": "#8E8EB0",
+      "symbolType": "circle",
+      "symbolSize": 90
+    },
+    "title": {
+      "anchor": "start",
+      "font": "Segoe UI Semibold",
+      "fontSize": 15,
+      "color": "#FFFFFF",
+      "subtitleColor": "#8E8EB0",
+      "subtitleFontSize": 12,
+      "offset": 16,
+      "subtitlePadding": 4
+    },
+    "text": {
+      "font": "Segoe UI",
+      "color": "#FFFFFF"
+    },
+    "tooltip": {},
+    "axisX": {
+      "labelColor": "#C7C7DD",
+      "labelFontSize": 11,
+      "orient": "top",
+      "labelPadding": 6,
+      "labelAngle": 0
+    }
+  }
+}

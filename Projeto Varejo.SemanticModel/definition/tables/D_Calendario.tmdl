@@ -1,0 +1,133 @@
+table D_Calendario
+	lineageTag: 808a4d82-ec7d-4bab-aa3a-aade6c8b4d54
+	dataCategory: Time
+
+	column Data
+		isKey
+		formatString: dd/mm/yyyy
+		lineageTag: 400a5205-5efc-4e6e-b3b0-392e9477b9b2
+		summarizeBy: none
+		sourceColumn: [Date]
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column Ano
+		formatString: 0
+		lineageTag: df600be1-f982-44d2-bdb6-b5f9e02ff33b
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Ano]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Mês Número'
+		formatString: 0
+		lineageTag: b812095b-507b-432d-9fde-7ca7a2b6a58b
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Mês Número]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Mês
+		lineageTag: 28757b9c-2e11-4f83-a5ec-6c7ae083a3c7
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Mês]
+		sortByColumn: 'Mês Número'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Mês Abrev'
+		lineageTag: b7549b04-eb3b-464f-9cdf-743335793b15
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Mês Abrev]
+		sortByColumn: 'Mês Número'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Ano Mês'
+		lineageTag: d8ef0d4c-633b-40dd-8ea1-be093c95c605
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Ano Mês]
+		sortByColumn: 'Ano Mês Número'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Ano Mês Número'
+		formatString: 0
+		lineageTag: 9c33aeaa-ab1e-460d-bd51-4cd1699689d3
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Ano Mês Número]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Trimestre
+		lineageTag: 43ccf2e5-d678-4474-9c75-f5e4958609d3
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Trimestre]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Dia da Semana'
+		lineageTag: fee413cf-01f6-4e3a-a398-e613e06ad0a5
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Dia da Semana]
+		sortByColumn: 'Dia da Semana Número'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Dia da Semana Número'
+		formatString: 0
+		lineageTag: c4c662bf-54d1-4e18-8f20-7ccc7a471fc3
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Dia da Semana Número]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Fim de Semana'
+		lineageTag: 9c9896f4-2db9-4e06-afa6-e9b29758adeb
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Fim de Semana]
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Primeiro dia do mês: use nos visuais Deneb mensais para receber uma linha por mês.
+	column 'Início do Mês' = DATE ( YEAR ( D_Calendario[Data] ), MONTH ( D_Calendario[Data] ), 1 )
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: 5463bba9-02d3-490d-9df2-8da0b99d7745
+		summarizeBy: none
+
+	partition D_Calendario = calculated
+		mode: import
+		source =
+				
+				VAR _Inicio = DATE ( YEAR ( MIN ( F_Vendas[Data_Pedido] ) ), 1, 1 )
+				VAR _Fim    = DATE ( YEAR ( MAX ( F_Vendas[Data_Entrega] ) ), 12, 31 )
+				RETURN
+				ADDCOLUMNS (
+				    CALENDAR ( _Inicio, _Fim ),
+				    "Ano", YEAR ( [Date] ),
+				    "Mês Número", MONTH ( [Date] ),
+				    "Mês", FORMAT ( [Date], "mmmm" ),
+				    "Mês Abrev", FORMAT ( [Date], "mmm" ),
+				    "Ano Mês", FORMAT ( [Date], "mmm/yy" ),
+				    "Ano Mês Número", YEAR ( [Date] ) * 100 + MONTH ( [Date] ),
+				    "Trimestre", "T" & QUARTER ( [Date] ),
+				    "Dia da Semana", FORMAT ( [Date], "dddd" ),
+				    "Dia da Semana Número", WEEKDAY ( [Date], 2 ),
+				    "Fim de Semana", IF ( WEEKDAY ( [Date], 2 ) > 5, "Sim", "Não" )
+				)
+
+	annotation PBI_Id = ee7ae19ff70d4b5eadabb786154c9563
+

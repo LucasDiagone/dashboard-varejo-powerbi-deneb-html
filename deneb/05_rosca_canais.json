@@ -1,0 +1,230 @@
+{
+  "campos_no_power_bi": [
+    "Canal_Venda",
+    "Faturamento"
+  ],
+  "spec": {
+    "data": {
+      "name": "dataset"
+    },
+    "width": "container",
+    "height": "container",
+    "title": {
+      "text": "Canais de venda",
+      "subtitle": "Participação no faturamento"
+    },
+    "transform": [
+      {
+        "filter": "datum['Faturamento'] > 0"
+      },
+      {
+        "joinaggregate": [
+          {
+            "op": "sum",
+            "field": "Faturamento",
+            "as": "tot"
+          }
+        ]
+      },
+      {
+        "calculate": "datum['Faturamento'] / datum.tot",
+        "as": "share"
+      },
+      {
+        "calculate": "datum['Canal_Venda'] + '   ' + replace(format(datum.share, '.1%'), '.', ',')",
+        "as": "lbl"
+      },
+      {
+        "calculate": "datum['Faturamento'] >= 1000000 ? 'R$ ' + replace(format(datum['Faturamento'] / 1000000, '.2f'), '.', ',') + ' mi' : 'R$ ' + replace(format(datum['Faturamento'] / 1000, ',.0f'), ',', '.') + ' mil'",
+        "as": "val_txt"
+      },
+      {
+        "calculate": "datum.tot >= 1000000 ? 'R$ ' + replace(format(datum.tot / 1000000, '.2f'), '.', ',') + ' mi' : 'R$ ' + replace(format(datum.tot / 1000, ',.0f'), ',', '.') + ' mil'",
+        "as": "tot_txt"
+      }
+    ],
+    "layer": [
+      {
+        "params": [
+          {
+            "name": "hc",
+            "select": {
+              "type": "point",
+              "fields": [
+                "lbl"
+              ],
+              "on": "pointerover",
+              "clear": "pointerout"
+            }
+          }
+        ],
+        "mark": {
+          "type": "arc",
+          "innerRadius": 62,
+          "outerRadius": 96,
+          "padAngle": 0.025,
+          "cornerRadius": 6
+        },
+        "encoding": {
+          "theta": {
+            "field": "Faturamento",
+            "type": "quantitative",
+            "stack": true
+          },
+          "order": {
+            "field": "Faturamento",
+            "sort": "descending"
+          },
+          "color": {
+            "field": "lbl",
+            "type": "nominal",
+            "sort": {
+              "field": "Faturamento",
+              "order": "descending"
+            },
+            "scale": {
+              "range": [
+                "#64D2FF",
+                "#5E5CE6",
+                "#BF5AF2",
+                "#FF375F"
+              ]
+            },
+            "legend": {
+              "orient": "right",
+              "title": null,
+              "labelFontSize": 12,
+              "labelColor": "#E5E5F0",
+              "rowPadding": 12,
+              "symbolSize": 110,
+              "offset": 10,
+              "labelLimit": 220
+            }
+          },
+          "opacity": {
+            "condition": {
+              "param": "hc",
+              "empty": true,
+              "value": 1
+            },
+            "value": 0.4
+          },
+          "tooltip": [
+            {
+              "field": "Canal_Venda",
+              "title": "Canal"
+            },
+            {
+              "field": "val_txt",
+              "title": "Faturamento"
+            },
+            {
+              "field": "share",
+              "format": ".1%",
+              "title": "Participação"
+            }
+          ]
+        }
+      },
+      {
+        "transform": [
+          {
+            "aggregate": [
+              {
+                "op": "max",
+                "field": "tot_txt",
+                "as": "t"
+              }
+            ]
+          }
+        ],
+        "mark": {
+          "type": "text",
+          "fontSize": 17,
+          "fontWeight": 700,
+          "dy": -6,
+          "color": "#FFFFFF"
+        },
+        "encoding": {
+          "text": {
+            "field": "t"
+          }
+        }
+      },
+      {
+        "transform": [
+          {
+            "aggregate": [
+              {
+                "op": "count",
+                "as": "n"
+              }
+            ]
+          }
+        ],
+        "mark": {
+          "type": "text",
+          "fontSize": 10.5,
+          "dy": 14,
+          "color": "#8E8EB0",
+          "text": "faturamento"
+        }
+      }
+    ]
+  },
+  "config": {
+    "autosize": {
+      "type": "fit",
+      "contains": "padding"
+    },
+    "padding": {
+      "left": 16,
+      "right": 20,
+      "top": 14,
+      "bottom": 10
+    },
+    "background": "transparent",
+    "font": "Segoe UI",
+    "view": {
+      "stroke": null
+    },
+    "axis": {
+      "domain": false,
+      "ticks": false,
+      "grid": false,
+      "labelColor": "#8E8EB0",
+      "labelFontSize": 10.5,
+      "labelPadding": 8,
+      "titleColor": "#6E6E8F",
+      "titleFontSize": 10,
+      "titleFontWeight": "normal"
+    },
+    "axisY": {
+      "grid": true,
+      "gridColor": "#FFFFFF",
+      "gridOpacity": 0.06
+    },
+    "legend": {
+      "labelColor": "#C7C7DD",
+      "labelFontSize": 11,
+      "titleColor": "#8E8EB0",
+      "symbolType": "circle",
+      "symbolSize": 90
+    },
+    "title": {
+      "anchor": "start",
+      "font": "Segoe UI Semibold",
+      "fontSize": 15,
+      "color": "#FFFFFF",
+      "subtitleColor": "#8E8EB0",
+      "subtitleFontSize": 12,
+      "offset": 16,
+      "subtitlePadding": 4
+    },
+    "text": {
+      "font": "Segoe UI",
+      "color": "#FFFFFF"
+    },
+    "tooltip": {}
+  }
+}

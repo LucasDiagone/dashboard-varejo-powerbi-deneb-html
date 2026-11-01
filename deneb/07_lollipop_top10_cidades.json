@@ -1,0 +1,245 @@
+{
+  "campos_no_power_bi": [
+    "Cidade",
+    "UF",
+    "Faturamento"
+  ],
+  "spec": {
+    "data": {
+      "name": "dataset"
+    },
+    "width": "container",
+    "height": "container",
+    "title": {
+      "text": "Top 10 cidades",
+      "subtitle": "Faturamento pela cidade do cliente"
+    },
+    "transform": [
+      {
+        "filter": "datum['Faturamento'] > 0"
+      },
+      {
+        "calculate": "datum['Cidade'] + ' · ' + datum['UF']",
+        "as": "cid"
+      },
+      {
+        "window": [
+          {
+            "op": "row_number",
+            "as": "rk"
+          }
+        ],
+        "sort": [
+          {
+            "field": "Faturamento",
+            "order": "descending"
+          }
+        ]
+      },
+      {
+        "filter": "datum.rk <= 10"
+      },
+      {
+        "calculate": "datum['Faturamento'] >= 1000000 ? 'R$ ' + replace(format(datum['Faturamento'] / 1000000, '.2f'), '.', ',') + ' mi' : 'R$ ' + replace(format(datum['Faturamento'] / 1000, ',.0f'), ',', '.') + ' mil'",
+        "as": "val_txt"
+      },
+      {
+        "joinaggregate": [
+          {
+            "op": "max",
+            "field": "Faturamento",
+            "as": "vmax"
+          }
+        ]
+      },
+      {
+        "calculate": "datum.vmax * 1.28",
+        "as": "xend"
+      },
+      {
+        "calculate": "0",
+        "as": "zero"
+      }
+    ],
+    "encoding": {
+      "y": {
+        "field": "cid",
+        "type": "nominal",
+        "sort": {
+          "field": "Faturamento",
+          "op": "max",
+          "order": "descending"
+        },
+        "axis": {
+          "title": null,
+          "labelLimit": 160
+        }
+      },
+      "opacity": {
+        "condition": {
+          "param": "hv",
+          "empty": true,
+          "value": 1
+        },
+        "value": 0.4
+      }
+    },
+    "layer": [
+      {
+        "mark": {
+          "type": "rule",
+          "color": "#2C2F5C",
+          "strokeWidth": 2
+        },
+        "encoding": {
+          "x": {
+            "field": "zero",
+            "type": "quantitative",
+            "axis": null,
+            "scale": {
+              "nice": false
+            }
+          },
+          "x2": {
+            "field": "Faturamento"
+          }
+        }
+      },
+      {
+        "mark": {
+          "type": "text",
+          "text": ""
+        },
+        "encoding": {
+          "x": {
+            "field": "xend",
+            "type": "quantitative"
+          }
+        }
+      },
+      {
+        "params": [
+          {
+            "name": "hv",
+            "select": {
+              "type": "point",
+              "fields": [
+                "cid"
+              ],
+              "on": "pointerover",
+              "clear": "pointerout"
+            }
+          }
+        ],
+        "mark": {
+          "type": "circle",
+          "size": 120,
+          "stroke": "#06071A",
+          "strokeWidth": 1.5
+        },
+        "encoding": {
+          "x": {
+            "field": "Faturamento",
+            "type": "quantitative"
+          },
+          "color": {
+            "field": "Faturamento",
+            "type": "quantitative",
+            "scale": {
+              "range": [
+                "#5E5CE6",
+                "#64D2FF"
+              ]
+            },
+            "legend": null
+          },
+          "tooltip": [
+            {
+              "field": "cid",
+              "title": "Cidade"
+            },
+            {
+              "field": "val_txt",
+              "title": "Faturamento"
+            }
+          ]
+        }
+      },
+      {
+        "mark": {
+          "type": "text",
+          "align": "left",
+          "dx": 12,
+          "fontSize": 11.5,
+          "fontWeight": 600
+        },
+        "encoding": {
+          "x": {
+            "field": "Faturamento",
+            "type": "quantitative"
+          },
+          "text": {
+            "field": "val_txt"
+          }
+        }
+      }
+    ]
+  },
+  "config": {
+    "autosize": {
+      "type": "fit",
+      "contains": "padding"
+    },
+    "padding": {
+      "left": 16,
+      "right": 20,
+      "top": 14,
+      "bottom": 10
+    },
+    "background": "transparent",
+    "font": "Segoe UI",
+    "view": {
+      "stroke": null
+    },
+    "axis": {
+      "domain": false,
+      "ticks": false,
+      "grid": false,
+      "labelColor": "#8E8EB0",
+      "labelFontSize": 10.5,
+      "labelPadding": 8,
+      "titleColor": "#6E6E8F",
+      "titleFontSize": 10,
+      "titleFontWeight": "normal"
+    },
+    "axisY": {
+      "grid": false,
+      "labelColor": "#E5E5F0",
+      "labelFontSize": 11.5,
+      "labelPadding": 10,
+      "labelLimit": 220
+    },
+    "legend": {
+      "labelColor": "#C7C7DD",
+      "labelFontSize": 11,
+      "titleColor": "#8E8EB0",
+      "symbolType": "circle",
+      "symbolSize": 90
+    },
+    "title": {
+      "anchor": "start",
+      "font": "Segoe UI Semibold",
+      "fontSize": 15,
+      "color": "#FFFFFF",
+      "subtitleColor": "#8E8EB0",
+      "subtitleFontSize": 12,
+      "offset": 16,
+      "subtitlePadding": 4
+    },
+    "text": {
+      "font": "Segoe UI",
+      "color": "#FFFFFF"
+    },
+    "tooltip": {}
+  }
+}

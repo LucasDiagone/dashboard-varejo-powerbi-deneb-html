@@ -1,0 +1,23 @@
+/// Pasta onde estão os CSVs. Ao clonar o repositório, troque pelo caminho da pasta dados na sua máquina.
+expression PastaDados = "C:\Users\lucas\OneDrive\Área de Trabalho\PowerBIClaude\Projeto Varejo\dados\" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: b44c1a00-3c83-42fd-9ef0-e68c2d8c7d31
+
+	annotation PBI_ResultType = Text
+
+expression Base_Vendas =
+		let
+		    Fonte = Csv.Document(File.Contents(PastaDados & "vendas_diagone_2023_2025.csv"),[Delimiter=";", Columns=38, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+		    #"Cabeçalhos Promovidos" = Table.PromoteHeaders(Fonte, [PromoteAllScalars=true]),
+		    #"Tipo Alterado" = Table.TransformColumnTypes(#"Cabeçalhos Promovidos",{{"ID_Pedido", Int64.Type}, {"Item_Pedido", Int64.Type}, {"Data_Pedido", type date}, {"Data_Envio", type date}, {"Data_Entrega", type date}, {"Status_Pedido", type text}, {"Canal_Venda", type text}, {"Forma_Pagamento", type text}, {"Qtd_Parcelas", Int64.Type}, {"Cupom", type text}, {"ID_Cliente", type text}, {"Nome_Cliente", type text}, {"Sexo", type text}, {"Data_Nascimento", type date}, {"Segmento_Cliente", type text}, {"Data_Cadastro", type date}, {"Cidade", type text}, {"UF", type text}, {"Regiao", type text}, {"ID_Loja", type text}, {"Nome_Loja", type text}, {"Cidade_Loja", type text}, {"UF_Loja", type text}, {"Tipo_Loja", type text}, {"Data_Inauguracao", type date}, {"ID_Vendedor", type text}, {"Nome_Vendedor", type text}, {"ID_Produto", type text}, {"Nome_Produto", type text}, {"Marca", type text}, {"Categoria", type text}, {"Subcategoria", type text}, {"Quantidade", Int64.Type}, {"Preco_Unitario", type number}, {"Custo_Unitario", type number}, {"Desconto_Perc", type number}, {"Valor_Frete", type number}, {"Nota_Avaliacao", Int64.Type}}),
+		    #"Texto Aparado" = Table.TransformColumns(#"Tipo Alterado",{{"Status_Pedido", Text.Trim, type text}, {"Canal_Venda", Text.Trim, type text}, {"Forma_Pagamento", Text.Trim, type text}, {"Nome_Cliente", Text.Trim, type text}, {"Segmento_Cliente", Text.Trim, type text}, {"Cidade", Text.Trim, type text}, {"Regiao", Text.Trim, type text}, {"Nome_Loja", Text.Trim, type text}, {"Cidade_Loja", Text.Trim, type text}, {"Tipo_Loja", Text.Trim, type text}, {"Nome_Vendedor", Text.Trim, type text}, {"Nome_Produto", Text.Trim, type text}, {"Marca", Text.Trim, type text}, {"Categoria", Text.Trim, type text}, {"Subcategoria", Text.Trim, type text}}),
+		    #"Colocar Cada Palavra Em Maiúscula" = Table.TransformColumns(#"Texto Aparado",{{"Nome_Cliente", Text.Proper, type text}, {"Cidade", Text.Proper, type text}, {"Categoria", Text.Proper, type text}}),
+		    #"Valor Substituído" = Table.ReplaceValue(#"Colocar Cada Palavra Em Maiúscula","pix","Pix",Replacer.ReplaceText,{"Forma_Pagamento"}),
+		    #"Duplicatas Removidas" = Table.Distinct(#"Valor Substituído")
+		in
+		    #"Duplicatas Removidas"
+	lineageTag: b5cc2b8f-160e-472e-8efa-cc183d17e09d
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,37 @@
+table D_Canal_Venda
+	lineageTag: b79f2801-6088-4b28-bdb3-7a795b6a8135
+
+	column Canal_Venda
+		dataType: string
+		lineageTag: 22f4449d-9cd3-4594-9f88-a7277013f071
+		summarizeBy: none
+		sourceColumn: Canal_Venda
+
+		annotation SummarizationSetBy = Automatic
+
+	column ID_Canal_Venda
+		dataType: int64
+		formatString: 0
+		lineageTag: 8a53dd7c-cee1-4c9a-ac1f-64d4bfdaccf7
+		summarizeBy: none
+		sourceColumn: ID_Canal_Venda
+
+		annotation SummarizationSetBy = Automatic
+
+	partition D_Canal_Venda = m
+		mode: import
+		queryGroup: Dimensão
+		source =
+				let
+				    Fonte = Base_Vendas,
+				    #"Outras Colunas Removidas" = Table.SelectColumns(Fonte,{"Canal_Venda"}),
+				    #"Duplicatas Removidas" = Table.Distinct(#"Outras Colunas Removidas"),
+				    #"Índice Adicionado" = Table.AddIndexColumn(#"Duplicatas Removidas", "Índice", 1, 1, Int64.Type),
+				    #"Colunas Renomeadas" = Table.RenameColumns(#"Índice Adicionado",{{"Índice", "ID_Canal_Venda"}})
+				in
+				    #"Colunas Renomeadas"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

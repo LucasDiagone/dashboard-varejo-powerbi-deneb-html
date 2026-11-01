@@ -1,0 +1,270 @@
+{
+  "campos_no_power_bi": [
+    "Subcategoria",
+    "Categoria",
+    "Faturamento",
+    "Margem Bruta %",
+    "Itens Vendidos"
+  ],
+  "spec": {
+    "data": {
+      "name": "dataset"
+    },
+    "width": "container",
+    "height": "container",
+    "title": {
+      "text": "Onde está a margem",
+      "subtitle": "Subcategorias · mais à direita = mais lucrativa · tamanho = itens vendidos"
+    },
+    "transform": [
+      {
+        "filter": "datum['Faturamento'] > 0"
+      },
+      {
+        "calculate": "datum['Faturamento'] >= 1000000 ? 'R$ ' + replace(format(datum['Faturamento'] / 1000000, '.2f'), '.', ',') + ' mi' : 'R$ ' + replace(format(datum['Faturamento'] / 1000, ',.0f'), ',', '.') + ' mil'",
+        "as": "val_txt"
+      },
+      {
+        "calculate": "replace(format(datum['Margem Bruta %'], '.1%'), '.', ',')",
+        "as": "mg_txt"
+      },
+      {
+        "window": [
+          {
+            "op": "row_number",
+            "as": "rk"
+          }
+        ],
+        "sort": [
+          {
+            "field": "Faturamento",
+            "order": "descending"
+          }
+        ]
+      }
+    ],
+    "encoding": {
+      "x": {
+        "field": "Margem Bruta %",
+        "type": "quantitative",
+        "scale": {
+          "zero": false,
+          "padding": 18
+        },
+        "axis": {
+          "title": "MARGEM BRUTA",
+          "format": ".0%",
+          "tickCount": 5,
+          "labelExpr": "replace(datum.label, '.', ',')",
+          "grid": true,
+          "gridColor": "#FFFFFF",
+          "gridOpacity": 0.05
+        }
+      },
+      "y": {
+        "field": "Faturamento",
+        "type": "quantitative",
+        "scale": {
+          "zero": false,
+          "padding": 18
+        },
+        "axis": {
+          "title": null,
+          "tickCount": 4,
+          "labelExpr": "datum.value >= 1000000 ? replace(format(datum.value / 1000000, '.1f'), '.', ',') + ' mi' : format(datum.value / 1000, '.0f') + ' mil'"
+        }
+      }
+    },
+    "layer": [
+      {
+        "transform": [
+          {
+            "aggregate": [
+              {
+                "op": "mean",
+                "field": "Margem Bruta %",
+                "as": "mm"
+              }
+            ]
+          }
+        ],
+        "mark": {
+          "type": "rule",
+          "strokeDash": [
+            4,
+            4
+          ],
+          "color": "#8E8EB0",
+          "opacity": 0.5
+        },
+        "encoding": {
+          "x": {
+            "field": "mm",
+            "type": "quantitative"
+          },
+          "y": null
+        }
+      },
+      {
+        "params": [
+          {
+            "name": "cat",
+            "select": {
+              "type": "point",
+              "fields": [
+                "Categoria"
+              ]
+            },
+            "bind": "legend"
+          }
+        ],
+        "mark": {
+          "type": "circle",
+          "opacity": 0.85,
+          "stroke": "#06071A",
+          "strokeWidth": 1
+        },
+        "encoding": {
+          "color": {
+            "field": "Categoria",
+            "type": "nominal",
+            "scale": {
+              "range": [
+                "#64D2FF",
+                "#5E5CE6",
+                "#BF5AF2",
+                "#FF375F",
+                "#FF9F0A",
+                "#30D158"
+              ]
+            },
+            "legend": {
+              "orient": "bottom",
+              "title": null,
+              "columns": 3,
+              "labelFontSize": 10.5,
+              "symbolSize": 70,
+              "rowPadding": 2,
+              "columnPadding": 14
+            }
+          },
+          "size": {
+            "field": "Itens Vendidos",
+            "type": "quantitative",
+            "scale": {
+              "range": [
+                40,
+                900
+              ]
+            },
+            "legend": null
+          },
+          "opacity": {
+            "condition": {
+              "param": "cat",
+              "value": 0.9
+            },
+            "value": 0.12
+          },
+          "tooltip": [
+            {
+              "field": "Subcategoria"
+            },
+            {
+              "field": "Categoria"
+            },
+            {
+              "field": "val_txt",
+              "title": "Faturamento"
+            },
+            {
+              "field": "mg_txt",
+              "title": "Margem bruta"
+            },
+            {
+              "field": "Itens Vendidos",
+              "format": ",.0f",
+              "title": "Itens vendidos"
+            }
+          ]
+        }
+      },
+      {
+        "transform": [
+          {
+            "filter": "datum.rk <= 3"
+          }
+        ],
+        "mark": {
+          "type": "text",
+          "align": "left",
+          "dx": 12,
+          "dy": -2,
+          "fontSize": 11,
+          "fontWeight": 600,
+          "color": "#FFFFFF"
+        },
+        "encoding": {
+          "text": {
+            "field": "Subcategoria"
+          }
+        }
+      }
+    ]
+  },
+  "config": {
+    "autosize": {
+      "type": "fit",
+      "contains": "padding"
+    },
+    "padding": {
+      "left": 16,
+      "right": 20,
+      "top": 14,
+      "bottom": 10
+    },
+    "background": "transparent",
+    "font": "Segoe UI",
+    "view": {
+      "stroke": null
+    },
+    "axis": {
+      "domain": false,
+      "ticks": false,
+      "grid": false,
+      "labelColor": "#8E8EB0",
+      "labelFontSize": 10.5,
+      "labelPadding": 8,
+      "titleColor": "#6E6E8F",
+      "titleFontSize": 10,
+      "titleFontWeight": "normal"
+    },
+    "axisY": {
+      "grid": true,
+      "gridColor": "#FFFFFF",
+      "gridOpacity": 0.06
+    },
+    "legend": {
+      "labelColor": "#C7C7DD",
+      "labelFontSize": 11,
+      "titleColor": "#8E8EB0",
+      "symbolType": "circle",
+      "symbolSize": 90
+    },
+    "title": {
+      "anchor": "start",
+      "font": "Segoe UI Semibold",
+      "fontSize": 15,
+      "color": "#FFFFFF",
+      "subtitleColor": "#8E8EB0",
+      "subtitleFontSize": 12,
+      "offset": 16,
+      "subtitlePadding": 4
+    },
+    "text": {
+      "font": "Segoe UI",
+      "color": "#FFFFFF"
+    },
+    "tooltip": {}
+  }
+}

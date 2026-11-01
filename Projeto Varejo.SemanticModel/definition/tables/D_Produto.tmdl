@@ -1,0 +1,58 @@
+table D_Produto
+	lineageTag: c574586b-fb87-4fe2-92d4-10b21bf98b22
+
+	column ID_Produto
+		dataType: string
+		lineageTag: b0a1a4c5-3f72-49a0-89ee-2bc5f2136968
+		summarizeBy: none
+		sourceColumn: ID_Produto
+
+		annotation SummarizationSetBy = Automatic
+
+	column Nome_Produto
+		dataType: string
+		lineageTag: ed1ddf73-0640-4afc-b0d0-5b2b42765d2b
+		summarizeBy: none
+		sourceColumn: Nome_Produto
+
+		annotation SummarizationSetBy = Automatic
+
+	column Marca
+		dataType: string
+		lineageTag: a71cac4e-425b-4d23-b718-55e4fc1ee495
+		summarizeBy: none
+		sourceColumn: Marca
+
+		annotation SummarizationSetBy = Automatic
+
+	column Categoria
+		dataType: string
+		lineageTag: fe31c018-6bce-43ef-81b2-e95dade166a2
+		summarizeBy: none
+		sourceColumn: Categoria
+
+		annotation SummarizationSetBy = Automatic
+
+	column Subcategoria
+		dataType: string
+		lineageTag: cbbe2e00-8ba4-4115-b73c-07acb0171975
+		summarizeBy: none
+		sourceColumn: Subcategoria
+
+		annotation SummarizationSetBy = Automatic
+
+	partition D_Produto = m
+		mode: import
+		queryGroup: Dimensão
+		source =
+				let
+				    Fonte = Base_Vendas,
+				    #"Outras Colunas Removidas" = Table.SelectColumns(Fonte,{"ID_Produto", "Nome_Produto", "Marca", "Categoria", "Subcategoria"}),
+				    #"Duplicatas Removidas" = Table.Distinct(#"Outras Colunas Removidas", {"ID_Produto"})
+				in
+				    #"Duplicatas Removidas"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+
